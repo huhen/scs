@@ -1,10 +1,21 @@
-﻿using System;
+﻿#define UTILIZA_DESCONEXION_AUTOMATICA
+
+/*
+ * I found a problem that occurs when a customer loses connection to the server. 
+ * This happens for example if the network cable is disconnected, a VPN stops, etc.
+ * I have not seen that in such cases the server is notified of the event in order to free up resources, perform a task, etc.
+ * In this case, the event works properly disconnect the client side. 
+ * However, on the server, the loss of communication with the client is not detected (or at least I have not seen). 
+ * I made a modification to detect this event and unlock resources and other issues that must be invoked before this event. 
+ */
+
+using System;
 using System.Net;
 using System.Net.Sockets;
 using Hik.Communication.Scs.Communication.EndPoints;
 using Hik.Communication.Scs.Communication.EndPoints.Tcp;
 using Hik.Communication.Scs.Communication.Messages;
-
+using System.Threading;
 namespace Hik.Communication.Scs.Communication.Channels.Tcp
 {
     /// <summary>
@@ -55,6 +66,11 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private readonly object _syncLock;
 
+#if UTILIZA_DESCONEXION_AUTOMATICA
+        Hik.Threading.Timer timerTimeout = null;
+        int timeoutFlag = 0;
+#endif
+
         #endregion
 
         #region Constructor
@@ -85,6 +101,15 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         public override void Disconnect()
         {
+
+#if UTILIZA_DESCONEXION_AUTOMATICA
+            if (timerTimeout != null)
+            {
+                timerTimeout.Stop();
+                timerTimeout = null;//????
+            }
+#endif
+
             if (CommunicationState != CommunicationStates.Connected)
             {
                 return;
@@ -119,8 +144,33 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         protected override void StartInternal()
         {
             _running = true;
-            _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, new AsyncCallback(ReceiveCallback), null);
+            IAsyncResult res = _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, new AsyncCallback(ReceiveCallback), null);
+
+#if UTILIZA_DESCONEXION_AUTOMATICA
+            //  if (res.IsCompleted)
+            {
+                timerTimeout = new Threading.Timer(120000);
+                timerTimeout.Elapsed += new EventHandler(timerTimeout_Elapsed);
+                timerTimeout.Start();
+            }
+#endif
         }
+
+#if UTILIZA_DESCONEXION_AUTOMATICA
+        void timerTimeout_Elapsed(object sender, EventArgs e)
+        {
+            timerTimeout.Stop();
+
+            //int valorAnterior = Interlocked.CompareExchange(ref timeoutFlag, 1, 0);
+            if (Interlocked.CompareExchange(ref timeoutFlag, 1, 0)/*valorAnterior*/ != 0)
+            {
+                //El flag ya ha sido seteado con lo cual nada!!
+                return;
+            }
+
+            Disconnect();
+        }
+#endif
 
         /// <summary>
         /// Sends a message to the remote application.
@@ -167,6 +217,18 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
                 return;
             }
 
+#if UTILIZA_DESCONEXION_AUTOMATICA
+            //int valorAnterior = Interlocked.CompareExchange(ref timeoutFlag, 2, 1);
+            if (Interlocked.CompareExchange(ref timeoutFlag, 2, 1)/*valorAnterior*/ != 0)
+            {
+                //El flag ya ha sido seteado con lo cual nada!!
+                return;
+            }
+
+            if (timerTimeout != null)
+                timerTimeout.Stop();
+#endif
+
             try
             {
                 //Get received bytes count
@@ -197,6 +259,9 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
                 if (_running)
                 {
                     _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, new AsyncCallback(ReceiveCallback), null);
+#if UTILIZA_DESCONEXION_AUTOMATICA
+                    timerTimeout.Start();
+#endif
                 }
             }
             catch
