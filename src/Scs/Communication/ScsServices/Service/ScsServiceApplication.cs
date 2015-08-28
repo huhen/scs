@@ -222,7 +222,7 @@ namespace Hik.Communication.ScsServices.Service
                     }
 
                     //Send method invocation return value to the client
-                    SendInvokeResponse(requestReplyMessenger, invokeMessage, returnValue, null);
+                    SendInvokeResponse(requestReplyMessenger, invokeMessage, returnValue, null, invokeMessage.Parameters);
                 }
                 catch (TargetInvocationException ex)
                 {
@@ -250,7 +250,8 @@ namespace Hik.Communication.ScsServices.Service
         /// <param name="requestMessage">Request message</param>
         /// <param name="returnValue">Return value to send</param>
         /// <param name="exception">Exception to send</param>
-        private static void SendInvokeResponse(IMessenger client, IScsMessage requestMessage, object returnValue, ScsRemoteException exception)
+        /// <param name="Parameters">Los parametros posiblemente modificados en la llamada al metodo mediante out o ref</param>
+        private static void SendInvokeResponse(IMessenger client, IScsMessage requestMessage, object returnValue, ScsRemoteException exception, object[] Parameters = null)
         {
             try
             {
@@ -259,7 +260,9 @@ namespace Hik.Communication.ScsServices.Service
                         {
                             RepliedMessageId = requestMessage.MessageId,
                             ReturnValue = returnValue,
-                            RemoteException = exception
+                            RemoteException = exception,
+                            //Se devuelven todos los parametros con su respectiva modificacion a fin de poder tener metodos con out y ref
+                            Parameters = Parameters
                         });
             }
             catch

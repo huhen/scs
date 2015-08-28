@@ -20,10 +20,26 @@ namespace CalculatorClient
                 client.Connect();
 
                 //Call a remote method of server
-                var division = client.ServiceProxy.Divide(42, 3);
+                double resultado = 0;
+                
+                //resultado = client.ServiceProxy.Divide(42, 3);
 
                 //Write the result to the screen
-                Console.WriteLine("Result: " + division);
+              //  Console.WriteLine("Result division: " + resultado);
+
+                double resultado2 = 0;
+                string mensaje="";
+                string[] otrosValores= new string[2] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
+                int k = 100;
+                string[] otrosValores2=null;
+                //                       double multiplicar(double a, double b, ref double resultado, out string mensaje, string[] otrosValores, ref int k, bool haceAlgo, out string[] otrosValores2);
+                resultado = client.ServiceProxy.multiplicar(42, 3, ref resultado2, out mensaje, otrosValores, ref k, true , out otrosValores2);
+
+                //Write the result to the screen
+                Console.WriteLine("Result multiplicar: " + resultado+ " resultado2: " + resultado2 + " mensaje:" + mensaje + " k: " + k);
+                if (otrosValores2 != null)
+                    foreach (string c in otrosValores2)
+                        Console.WriteLine("Otros valores2 " + c);
             }
 
             Console.WriteLine("Press enter to stop client application");

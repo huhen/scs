@@ -1,4 +1,5 @@
-﻿#define UTILIZA_DESCONEXION_AUTOMATICA
+﻿
+#define UTILIZA_DESCONEXION_AUTOMATICA
 
 /*
  * I found a problem that occurs when a customer loses connection to the server. 

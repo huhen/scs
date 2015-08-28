@@ -42,5 +42,18 @@ namespace CalculatorServer
 
             return number1 / number2;
         }
+
+        public double multiplicar(double a, double b, ref double resultado, out string mensaje, string[] otrosValores, ref int k, bool haceAlgo, out string[] otrosValores2)
+        {
+            otrosValores2 = null;
+            mensaje = Guid.NewGuid().ToString();
+            resultado = a*b;
+            k += (int)resultado; 
+            if (haceAlgo)
+            {
+                otrosValores2 = new string[2] { "pedro", "almodovar" };
+            }
+            return resultado;
+        }
     }
 }

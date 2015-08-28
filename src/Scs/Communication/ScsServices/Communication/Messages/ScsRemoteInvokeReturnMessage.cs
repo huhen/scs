@@ -29,5 +29,10 @@ namespace Hik.Communication.ScsServices.Communication.Messages
         {
             return string.Format("ScsRemoteInvokeReturnMessage: Returns {0}, Exception = {1}", ReturnValue, RemoteException);
         }
+
+        /// <summary>
+        /// Los parametros que posiblemente hayan sido modificados mediante out o ref en la llamada al metodo
+        /// </summary>
+        public object[] Parameters { get; set; }
     }
 }

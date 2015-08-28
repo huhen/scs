@@ -44,9 +44,10 @@ namespace Hik.Communication.ScsServices.Communication
 
             var requestMessage = new ScsRemoteInvokeMessage
             {
-                ServiceClassName = typeof (TProxy).Name,
+                ServiceClassName = typeof(TProxy).Name,
                 MethodName = message.MethodName,
-                Parameters = message.InArgs
+                //Parameters = message.InArgs
+                Parameters = message.Args
             };
 
             var responseMessage = _clientMessenger.SendMessageAndWaitForResponse(requestMessage) as ScsRemoteInvokeReturnMessage;
@@ -55,9 +56,29 @@ namespace Hik.Communication.ScsServices.Communication
                 return null;
             }
 
+            /*
+             * http://stackoverflow.com/questions/3081341/ref-argument-through-a-realproxy
+             * The second parameter of ReturnMessage needs to contain the values of the ref and out parameters to pass back. You can get them by saving a reference to the array you pass in:
+
+public override System.Runtime.Remoting.Messaging.IMessage Invoke(System.Runtime.Remoting.Messaging.IMessage msg)
+{
+    IMethodCallMessage call = msg as IMethodCallMessage;
+    var args = call.Args;
+    object returnValue = typeof(HelloClass).InvokeMember(call.MethodName, BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance, null, _hello, args);
+    return new ReturnMessage(returnValue, args, args.Length, call.LogicalCallContext, call);
+}
+             */
+            object[] args = null;
+            int largo = 0;
+
+            if (responseMessage.Parameters != null)
+            {
+                args = responseMessage.Parameters;
+                largo = args.Length;
+            }
             return responseMessage.RemoteException != null
                        ? new ReturnMessage(responseMessage.RemoteException, message)
-                       : new ReturnMessage(responseMessage.ReturnValue, null, 0, message.LogicalCallContext, message);
+                       : new ReturnMessage(responseMessage.ReturnValue, args, largo, message.LogicalCallContext, message);
         }
     }
 }
