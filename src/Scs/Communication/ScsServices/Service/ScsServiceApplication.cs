@@ -20,11 +20,13 @@ namespace Hik.Communication.ScsServices.Service
         /// This event is raised when a new client connected to the service.
         /// </summary>
         public event EventHandler<ServiceClientEventArgs> ClientConnected;
-       
+
         /// <summary>
         /// This event is raised when a client disconnected from the service.
         /// </summary>
         public event EventHandler<ServiceClientEventArgs> ClientDisconnected;
+
+
 
         #endregion
 
@@ -101,7 +103,7 @@ namespace Hik.Communication.ScsServices.Service
         /// <param name="service">An instance of TServiceClass.</param>
         /// <exception cref="ArgumentNullException">Throws ArgumentNullException if service argument is null</exception>
         /// <exception cref="Exception">Throws Exception if service is already added before</exception>
-        public void AddService<TServiceInterface, TServiceClass>(TServiceClass service) 
+        public void AddService<TServiceInterface, TServiceClass>(TServiceClass service)
             where TServiceClass : ScsService, TServiceInterface
             where TServiceInterface : class
         {
@@ -111,9 +113,9 @@ namespace Hik.Communication.ScsServices.Service
             }
 
             var type = typeof(TServiceInterface);
-            if(_serviceObjects[type.Name] != null)
+            if (_serviceObjects[type.Name] != null)
             {
-                throw new Exception("Service '" + type.Name + "' is already added before.");                
+                throw new Exception("Service '" + type.Name + "' is already added before.");
             }
 
             _serviceObjects[type.Name] = new ServiceObject(type, service);
@@ -177,7 +179,7 @@ namespace Hik.Communication.ScsServices.Service
         private void Client_MessageReceived(object sender, MessageEventArgs e)
         {
             //Get RequestReplyMessenger object (sender of event) to get client
-            var requestReplyMessenger = (RequestReplyMessenger<IScsServerClient>) sender;
+            var requestReplyMessenger = (RequestReplyMessenger<IScsServerClient>)sender;
 
             //Cast message to ScsRemoteInvokeMessage and check it
             var invokeMessage = e.Message as ScsRemoteInvokeMessage;
@@ -265,9 +267,20 @@ namespace Hik.Communication.ScsServices.Service
                             Parameters = Parameters
                         });
             }
-            catch
+            catch (Exception ex)
             {
+                //Si por ejemplo se intenta enviar como respuesta un objeto no serializable, la aplicacion se cuelga y el cliente no obtiene ningun dato que permita saber el porque
+                try
+                {
+                    client.SendMessage(
+                        new ScsRemoteInvokeReturnMessage
+                        {
+                            RepliedMessageId = requestMessage.MessageId,
+                            RemoteException = new ScsRemoteException("SendInvokeResponse: " + ex.Message, ex),
+                        });
+                }
 
+                catch { }
             }
         }
 
@@ -369,5 +382,7 @@ namespace Hik.Communication.ScsServices.Service
         }
 
         #endregion
+
+
     }
 }
