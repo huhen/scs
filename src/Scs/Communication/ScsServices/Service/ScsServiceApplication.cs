@@ -49,7 +49,7 @@ namespace Hik.Communication.ScsServices.Service
         /// Key: Client's unique Id.
         /// Value: Reference to the client.
         /// </summary>
-        private readonly ThreadSafeSortedList<long, IScsServiceClient> _serviceClients;
+        private readonly ThreadSafeSortedList<string, IScsServiceClient> _serviceClients;
 
         #endregion
 
@@ -71,7 +71,7 @@ namespace Hik.Communication.ScsServices.Service
             _scsServer.ClientConnected += ScsServer_ClientConnected;
             _scsServer.ClientDisconnected += ScsServer_ClientDisconnected;
             _serviceObjects = new ThreadSafeSortedList<string, ServiceObject>();
-            _serviceClients = new ThreadSafeSortedList<long, IScsServiceClient>();
+            _serviceClients = new ThreadSafeSortedList<string, IScsServiceClient>();
         }
 
         #endregion

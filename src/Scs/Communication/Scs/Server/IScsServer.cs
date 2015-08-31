@@ -27,7 +27,7 @@ namespace Hik.Communication.Scs.Server
         /// <summary>
         /// A collection of clients that are connected to the server.
         /// </summary>
-        ThreadSafeSortedList<long, IScsServerClient> Clients { get; }
+        ThreadSafeSortedList<string, IScsServerClient> Clients { get; }
         
         /// <summary>
         /// Starts the server.
@@ -38,5 +38,6 @@ namespace Hik.Communication.Scs.Server
         /// Stops the server.
         /// </summary>
         void Stop();
+
     }
 }

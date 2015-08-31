@@ -28,7 +28,7 @@ namespace Hik.Communication.ScsServices.Service
         /// <summary>
         /// Unique identifier for this client.
         /// </summary>
-        public long ClientId
+        public string ClientId
         {
             get { return _serverClient.ClientId; }
         }

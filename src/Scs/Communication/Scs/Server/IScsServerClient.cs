@@ -18,7 +18,7 @@ namespace Hik.Communication.Scs.Server
         /// <summary>
         /// Unique identifier for this client in server.
         /// </summary>
-        long ClientId { get; }
+        string ClientId { get; }
 
         ///<summary>
         /// Gets endpoint of remote application.

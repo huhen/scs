@@ -37,7 +37,7 @@ namespace Hik.Communication.Scs.Server
         /// <summary>
         /// Unique identifier for this client in server.
         /// </summary>
-        public long ClientId { get; set; }
+        public string ClientId { get; set; }
 
         /// <summary>
         /// Gets the communication state of the Client.

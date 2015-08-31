@@ -1,5 +1,5 @@
-﻿using System.Threading;
-
+﻿//using System.Threading;
+using System;
 namespace Hik.Communication.Scs.Server
 {
     /// <summary>
@@ -16,9 +16,10 @@ namespace Hik.Communication.Scs.Server
         /// Gets an unique number to be used as idenfitier of a client.
         /// </summary>
         /// <returns></returns>
-        public static long GetClientId()
+        public static /*long*/ string GetClientId()
         {
-            return Interlocked.Increment(ref _lastClientId);
+            //return Interlocked.Increment(ref _lastClientId);
+            return Guid.NewGuid().ToString();
         }
     }
 }

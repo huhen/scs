@@ -21,4 +21,6 @@ namespace Hik.Communication.Scs.Server
             Client = client;
         }
     }
+
+   
 }
