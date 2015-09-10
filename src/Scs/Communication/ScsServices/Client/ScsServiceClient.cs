@@ -66,6 +66,11 @@ namespace Hik.Communication.ScsServices.Client
             set { _requestReplyMessenger.Timeout = value; }
         }
 
+        /// <summary>
+        /// Es util para almacenar cosas dentro del objeto
+        /// </summary>
+        public object tag { get; set; }
+
         #endregion
 
         #region Private fields

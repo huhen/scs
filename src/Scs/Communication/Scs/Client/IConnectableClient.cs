@@ -39,5 +39,10 @@ namespace Hik.Communication.Scs.Client
         /// Does nothing if already disconnected.
         /// </summary>
         void Disconnect();
+
+        /// <summary>
+        /// Es util para almacenar cosas dentro del objeto
+        /// </summary>
+        object tag { get; set; }
     }
 }

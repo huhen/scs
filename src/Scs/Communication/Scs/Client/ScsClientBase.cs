@@ -102,6 +102,11 @@ namespace Hik.Communication.Scs.Client
             }
         }
 
+        /// <summary>
+        /// Es util para almacenar cosas dentro del objeto
+        /// </summary>
+        public object tag { get; set; }
+
         #endregion
 
         #region Private fields

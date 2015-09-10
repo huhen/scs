@@ -381,8 +381,6 @@ namespace Hik.Communication.ScsServices.Service
             }
         }
 
-        #endregion
-
-
+        #endregion       
     }
 }
