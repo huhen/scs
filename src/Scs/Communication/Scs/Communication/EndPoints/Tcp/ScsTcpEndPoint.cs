@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Security.Cryptography.X509Certificates;
 using Hik.Communication.Scs.Client;
 using Hik.Communication.Scs.Client.Tcp;
 using Hik.Communication.Scs.Server;
 using Hik.Communication.Scs.Server.Tcp;
-
+using System.Collections.Generic;
 namespace Hik.Communication.Scs.Communication.EndPoints.Tcp
 {
     /// <summary>
@@ -63,6 +64,16 @@ namespace Hik.Communication.Scs.Communication.EndPoints.Tcp
             return new ScsTcpServer(this);
         }
 
+       /// <summary>
+       /// SSL
+       /// </summary>
+       /// <param name="certificate"></param>
+       /// <returns></returns>
+        internal override IScsServer CreateSecureServer(X509Certificate2 serverCert, List<X509Certificate2> clientCerts)
+        {
+            return new ScsTcpSslServer(this, serverCert, clientCerts);
+        }
+
         /// <summary>
         /// Creates a Scs Client that uses this end point to connect to server.
         /// </summary>
@@ -70,6 +81,18 @@ namespace Hik.Communication.Scs.Communication.EndPoints.Tcp
         internal override IScsClient CreateClient()
         {
             return new ScsTcpClient(this);
+        }
+        
+      /// <summary>
+      /// SSL
+      /// </summary>
+      /// <param name="certificateName"></param>
+      /// <param name="acceptSelfSignedCerts"></param>
+      /// <param name="nombreServerCert"></param>
+      /// <returns></returns>
+        internal override IScsClient CreateSecureClient(X509Certificate2 serverCert, X509Certificate2 clientCert, string nombreServerCert)
+        {
+            return new ScsTcpSslClient(this, serverCert, clientCert, nombreServerCert);
         }
 
         /// <summary>

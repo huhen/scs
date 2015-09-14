@@ -1,5 +1,6 @@
 ﻿using Hik.Communication.Scs.Communication.EndPoints;
-
+using System.Security.Cryptography.X509Certificates;
+using System.Collections.Generic;
 namespace Hik.Communication.Scs.Server
 {
     /// <summary>
@@ -15,6 +16,17 @@ namespace Hik.Communication.Scs.Server
         public static IScsServer CreateServer(ScsEndPoint endPoint)
         {
             return endPoint.CreateServer();
+        }
+        
+       /// <summary>
+       /// SSL
+       /// </summary>
+       /// <param name="endPoint"></param>
+       /// <param name="cert"></param>
+       /// <returns></returns>
+        public static IScsServer CreateSecureServer(ScsEndPoint endPoint, X509Certificate2 serverCert, List<X509Certificate2> clientCerts)
+        {
+            return endPoint.CreateSecureServer(serverCert, clientCerts);
         }
     }
 }
