@@ -351,12 +351,24 @@ namespace Hik.Communication.ScsServices.Service
                     throw new Exception("Service interface (" + serviceInterfaceType.Name + ") must has ScsService attribute.");
                 }
 
-                ServiceAttribute = classAttributes[0] as ScsServiceAttribute;
                 _methods = new SortedList<string, MethodInfo>();
+                buscarMetodos(serviceInterfaceType);
+
+            }
+
+            /// <summary>
+            /// Permite buscar los metodos no solo de la interface que implementa la clase de servicio sino tambien de las interfaces heredadas
+            /// </summary>
+            /// <param name="serviceInterfaceType"></param>
+            void buscarMetodos(Type serviceInterfaceType)
+            {
+                if (serviceInterfaceType == null)
+                    return;
                 foreach (var methodInfo in serviceInterfaceType.GetMethods())
-                {
                     _methods.Add(methodInfo.Name, methodInfo);
-                }
+
+                foreach (var p in serviceInterfaceType.GetInterfaces())
+                    buscarMetodos(p);
             }
 
             /// <summary>
