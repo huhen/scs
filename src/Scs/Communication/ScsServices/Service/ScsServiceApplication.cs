@@ -229,7 +229,10 @@ namespace Hik.Communication.ScsServices.Service
                 catch (TargetInvocationException ex)
                 {
                     var innerEx = ex.InnerException;
-                    SendInvokeResponse(requestReplyMessenger, invokeMessage, null, new ScsRemoteException(innerEx.Message + Environment.NewLine + "Service Version: " + serviceObject.ServiceAttribute.Version, innerEx));
+                    //Si el atributo de servicio del objeto es null, al momento de levantar la excepcion no se muestra el error real sino un Object Reference
+                    string detalle = serviceObject.ServiceAttribute != null ? (Environment.NewLine + "Service Version: " + serviceObject.ServiceAttribute.Version) : "";
+                    var excepcion = new ScsRemoteException(innerEx.Message + detalle, innerEx);
+                    SendInvokeResponse(requestReplyMessenger, invokeMessage, null, excepcion);
                     return;
                 }
                 catch (Exception ex)
