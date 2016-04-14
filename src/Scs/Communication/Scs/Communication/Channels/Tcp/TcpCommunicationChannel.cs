@@ -1,5 +1,4 @@
-﻿
-#define UTILIZA_DESCONEXION_AUTOMATICA
+﻿#define UTILIZA_DESCONEXION_AUTOMATICA
 
 /*
  * I found a problem that occurs when a customer loses connection to the server. 
@@ -68,8 +67,8 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         private readonly object _syncLock;
 
 #if UTILIZA_DESCONEXION_AUTOMATICA
-        Hik.Threading.Timer timerTimeout = null;
-        int timeoutFlag = 0;
+        private Threading.Timer _timerTimeout;
+        private int _timeoutFlag;
 #endif
 
         #endregion
@@ -104,10 +103,10 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         {
 
 #if UTILIZA_DESCONEXION_AUTOMATICA
-            if (timerTimeout != null)
+            if (_timerTimeout != null)
             {
-                timerTimeout.Stop();
-                timerTimeout = null;//????
+                _timerTimeout.Stop();
+                _timerTimeout = null;//????
             }
 #endif
 
@@ -145,25 +144,25 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         protected override void StartInternal()
         {
             _running = true;
-            IAsyncResult res = _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, new AsyncCallback(ReceiveCallback), null);
+            IAsyncResult res = _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, ReceiveCallback, null);
 
 #if UTILIZA_DESCONEXION_AUTOMATICA
             //  if (res.IsCompleted)
             {
-                timerTimeout = new Threading.Timer(120000);
-                timerTimeout.Elapsed += new EventHandler(timerTimeout_Elapsed);
-                timerTimeout.Start();
+                _timerTimeout = new Threading.Timer(120000);
+                _timerTimeout.Elapsed += timerTimeout_Elapsed;
+                _timerTimeout.Start();
             }
 #endif
         }
 
 #if UTILIZA_DESCONEXION_AUTOMATICA
-        void timerTimeout_Elapsed(object sender, EventArgs e)
+        private void timerTimeout_Elapsed(object sender, EventArgs e)
         {
-            timerTimeout.Stop();
+            _timerTimeout.Stop();
 
             //int valorAnterior = Interlocked.CompareExchange(ref timeoutFlag, 1, 0);
-            if (Interlocked.CompareExchange(ref timeoutFlag, 1, 0)/*valorAnterior*/ != 0)
+            if (Interlocked.CompareExchange(ref _timeoutFlag, 1, 0)/*valorAnterior*/ != 0)
             {
                 //El flag ya ha sido seteado con lo cual nada!!
                 return;
@@ -220,14 +219,13 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
 
 #if UTILIZA_DESCONEXION_AUTOMATICA
             //int valorAnterior = Interlocked.CompareExchange(ref timeoutFlag, 2, 1);
-            if (Interlocked.CompareExchange(ref timeoutFlag, 2, 1)/*valorAnterior*/ != 0)
+            if (Interlocked.CompareExchange(ref _timeoutFlag, 2, 1)/*valorAnterior*/ != 0)
             {
                 //El flag ya ha sido seteado con lo cual nada!!
                 return;
             }
 
-            if (timerTimeout != null)
-                timerTimeout.Stop();
+            _timerTimeout?.Stop();
 #endif
 
             try
@@ -259,9 +257,9 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
                 //Read more bytes if still running
                 if (_running)
                 {
-                    _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, new AsyncCallback(ReceiveCallback), null);
+                    _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, ReceiveCallback, null);
 #if UTILIZA_DESCONEXION_AUTOMATICA
-                    timerTimeout.Start();
+                    _timerTimeout?.Start();
 #endif
                 }
             }

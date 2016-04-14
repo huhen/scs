@@ -41,7 +41,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         /// <param name="endPoint"></param>
         /// <param name="serverCert"></param>
-        /// <param name="clientCert"></param>
+        /// <param name="clientCerts"></param>
         public TcpSslConnectionListener(ScsTcpEndPoint endPoint, X509Certificate2 serverCert, List<X509Certificate2> clientCerts)
         {
             _endPoint = endPoint;
@@ -106,7 +106,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
                     var client = _listenerSocket.AcceptTcpClient();
                     if (client.Connected)
                     {
-                        SslStream sslStream = new SslStream(client.GetStream(), false, new RemoteCertificateValidationCallback(ValidateCertificate)); 
+                        SslStream sslStream = new SslStream(client.GetStream(), false, ValidateCertificate); 
                         sslStream.AuthenticateAsServer(_serverCert, true, System.Security.Authentication.SslProtocols.Default, true);
 
                         OnCommunicationChannelConnected(new TcpSslCommunicationChannel(_endPoint, client, sslStream));
@@ -152,14 +152,14 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
 
             if ((sslPolicyErrors == SslPolicyErrors.RemoteCertificateChainErrors) && (_clientCerts != null))
             {
-                foreach (var _clientCert in _clientCerts)
-                    if (_clientCert.GetCertHashString().Equals(certificate.GetCertHashString()))
+                foreach (var clientCert in _clientCerts)
+                    if (clientCert.GetCertHashString().Equals(certificate.GetCertHashString()))
                         return true;
                 return false;
             }
             else
             {
-                return (sslPolicyErrors == SslPolicyErrors.None);
+                return sslPolicyErrors == SslPolicyErrors.None;
             }
         }
     }

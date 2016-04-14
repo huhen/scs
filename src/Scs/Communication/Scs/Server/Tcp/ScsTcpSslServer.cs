@@ -24,7 +24,7 @@ namespace Hik.Communication.Scs.Server.Tcp
         /// </summary>
         /// <param name="endPoint"></param>
         /// <param name="serverCert"></param>
-        /// <param name="clientCert"></param>
+        /// <param name="clientCerts"></param>
         public ScsTcpSslServer(ScsTcpEndPoint endPoint, X509Certificate2 serverCert, List<X509Certificate2> clientCerts)
         {
             _endPoint = endPoint;

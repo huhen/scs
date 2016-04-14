@@ -19,6 +19,13 @@ namespace Hik.Communication.ScsServices.Service
             return new ScsServiceApplication(ScsServerFactory.CreateServer(endPoint));
         }
 
+        /// <summary>
+        /// Creates a new secure SCS Service application using an EndPoint.
+        /// </summary>
+        /// <param name="endPoint"></param>
+        /// <param name="serverCert"></param>
+        /// <param name="clientCerts"></param>
+        /// <returns></returns>
         public static IScsServiceApplication CreateSecureService(ScsEndPoint endPoint, X509Certificate2 serverCert, List<X509Certificate2> clientCerts)
         {
             return new ScsServiceApplication(ScsServerFactory.CreateSecureServer(endPoint, serverCert, clientCerts));

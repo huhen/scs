@@ -7,10 +7,10 @@ namespace Hik.Communication.Scs.Server
     /// </summary>
     internal static class ScsServerManager
     {
-        /// <summary>
+        /*/// <summary>
         /// Used to set an auto incremential unique identifier to clients.
         /// </summary>
-        private static long _lastClientId;
+        private static long _lastClientId;*/
 
         /// <summary>
         /// Gets an unique number to be used as idenfitier of a client.

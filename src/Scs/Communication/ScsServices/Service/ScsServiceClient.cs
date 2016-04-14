@@ -135,10 +135,7 @@ namespace Hik.Communication.ScsServices.Service
         private void OnDisconnected()
         {
             var handler = Disconnected;
-            if (handler != null)
-            {
-                handler(this, EventArgs.Empty);
-            }
+            handler?.Invoke(this, EventArgs.Empty);
         }
 
         #endregion

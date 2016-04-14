@@ -77,10 +77,7 @@ namespace Hik.Communication.Scs.Server
         /// </summary>
         public virtual void Stop()
         {
-            if (_connectionListener != null)
-            {
-                _connectionListener.Stop();
-            }
+            _connectionListener?.Stop();
 
             foreach (var client in Clients.GetAllItems())
             {
@@ -144,10 +141,7 @@ namespace Hik.Communication.Scs.Server
         protected virtual void OnClientConnected(IScsServerClient client)
         {
             var handler = ClientConnected;
-            if (handler != null)
-            {
-                handler(this, new ServerClientEventArgs(client));
-            }
+            handler?.Invoke(this, new ServerClientEventArgs(client));
         }
 
         /// <summary>
@@ -157,10 +151,7 @@ namespace Hik.Communication.Scs.Server
         protected virtual void OnClientDisconnected(IScsServerClient client)
         {
             var handler = ClientDisconnected;
-            if (handler != null)
-            {
-                handler(this, new ServerClientEventArgs(client));
-            }
+            handler?.Invoke(this, new ServerClientEventArgs(client));
         }
 
         #endregion

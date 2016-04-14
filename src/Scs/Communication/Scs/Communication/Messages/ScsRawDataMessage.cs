@@ -50,7 +50,7 @@ namespace Hik.Communication.Scs.Communication.Messages
         /// <returns>A string to represents this object</returns>
         public override string ToString()
         {
-            var messageLength = MessageData == null ? 0 : MessageData.Length;
+            var messageLength = MessageData?.Length ?? 0;
             return string.IsNullOrEmpty(RepliedMessageId)
                        ? string.Format("ScsRawDataMessage [{0}]: {1} bytes", MessageId, messageLength)
                        : string.Format("ScsRawDataMessage [{0}] Replied To [{1}]: {2} bytes", MessageId, RepliedMessageId, messageLength);

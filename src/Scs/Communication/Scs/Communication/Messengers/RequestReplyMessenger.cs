@@ -306,10 +306,7 @@ namespace Hik.Communication.Scs.Communication.Messengers
         protected virtual void OnMessageReceived(IScsMessage message)
         {
             var handler = MessageReceived;
-            if (handler != null)
-            {
-                handler(this, new MessageEventArgs(message));
-            }
+            handler?.Invoke(this, new MessageEventArgs(message));
         }
 
         /// <summary>
@@ -319,10 +316,7 @@ namespace Hik.Communication.Scs.Communication.Messengers
         protected virtual void OnMessageSent(IScsMessage message)
         {
             var handler = MessageSent;
-            if (handler != null)
-            {
-                handler(this, new MessageEventArgs(message));
-            }
+            handler?.Invoke(this, new MessageEventArgs(message));
         }
 
         #endregion

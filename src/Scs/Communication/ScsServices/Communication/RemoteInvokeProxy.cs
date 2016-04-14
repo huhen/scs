@@ -1,6 +1,5 @@
 ﻿using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting.Proxies;
-using Hik.Communication.Scs.Communication;
 using Hik.Communication.Scs.Communication.Messengers;
 using Hik.Communication.ScsServices.Communication.Messages;
 

@@ -43,6 +43,6 @@ namespace Hik.Communication.Scs.Client
         /// <summary>
         /// Es util para almacenar cosas dentro del objeto
         /// </summary>
-        object tag { get; set; }
+        object Tag { get; set; }
     }
 }

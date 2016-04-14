@@ -70,9 +70,7 @@ namespace Hik.Communication.Scs.Client
         {
             get
             {
-                return _communicationChannel != null
-                           ? _communicationChannel.CommunicationState
-                           : CommunicationStates.Disconnected;
+                return _communicationChannel?.CommunicationState ?? CommunicationStates.Disconnected;
             }
         }
 
@@ -83,9 +81,7 @@ namespace Hik.Communication.Scs.Client
         {
             get
             {
-                return _communicationChannel != null
-                           ? _communicationChannel.LastReceivedMessageTime
-                           : DateTime.MinValue;
+                return _communicationChannel?.LastReceivedMessageTime ?? DateTime.MinValue;
             }
         }
 
@@ -96,16 +92,14 @@ namespace Hik.Communication.Scs.Client
         {
             get
             {
-                return _communicationChannel != null
-                           ? _communicationChannel.LastSentMessageTime
-                           : DateTime.MinValue;
+                return _communicationChannel?.LastSentMessageTime ?? DateTime.MinValue;
             }
         }
 
         /// <summary>
         /// Es util para almacenar cosas dentro del objeto
         /// </summary>
-        public object tag { get; set; }
+        public object Tag { get; set; }
 
         #endregion
 
@@ -286,10 +280,7 @@ namespace Hik.Communication.Scs.Client
         protected virtual void OnConnected()
         {
             var handler = Connected;
-            if (handler != null)
-            {
-                handler(this, EventArgs.Empty);
-            }
+            handler?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -298,10 +289,7 @@ namespace Hik.Communication.Scs.Client
         protected virtual void OnDisconnected()
         {
             var handler = Disconnected;
-            if (handler != null)
-            {
-                handler(this, EventArgs.Empty);
-            }
+            handler?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -311,10 +299,7 @@ namespace Hik.Communication.Scs.Client
         protected virtual void OnMessageReceived(IScsMessage message)
         {
             var handler = MessageReceived;
-            if (handler != null)
-            {
-                handler(this, new MessageEventArgs(message));
-            }
+            handler?.Invoke(this, new MessageEventArgs(message));
         }
 
         /// <summary>
@@ -324,10 +309,7 @@ namespace Hik.Communication.Scs.Client
         protected virtual void OnMessageSent(IScsMessage message)
         {
             var handler = MessageSent;
-            if (handler != null)
-            {
-                handler(this, new MessageEventArgs(message));
-            }
+            handler?.Invoke(this, new MessageEventArgs(message));
         }
 
         #endregion

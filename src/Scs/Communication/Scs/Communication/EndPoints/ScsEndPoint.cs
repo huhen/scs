@@ -24,7 +24,7 @@ namespace Hik.Communication.Scs.Communication.EndPoints
             //Check if end point address is null
             if (string.IsNullOrEmpty(endPointAddress))
             {
-                throw new ArgumentNullException("endPointAddress");
+                throw new ArgumentNullException(nameof(endPointAddress));
             }
 
             //If not protocol specified, assume TCP.
@@ -64,7 +64,7 @@ namespace Hik.Communication.Scs.Communication.EndPoints
         /// SSL
         /// </summary>
         /// <param name="serverCert"></param>
-        /// <param name="clientCert"></param>
+        /// <param name="clientCerts"></param>
         /// <returns></returns>
         internal abstract IScsServer CreateSecureServer(X509Certificate2 serverCert, List<X509Certificate2> clientCerts);
 
@@ -73,14 +73,14 @@ namespace Hik.Communication.Scs.Communication.EndPoints
         /// </summary>
         /// <returns>Scs Client</returns>
         internal abstract IScsClient CreateClient();
-        
-      /// <summary>
-      /// SSL
-      /// </summary>
-      /// <param name="certificateName"></param>
-      /// <param name="acceptSelfSignedCerts"></param>
-      /// <param name="nombreServerCert"></param>
-      /// <returns></returns>
+
+        /// <summary>
+        /// SSL
+        /// </summary>
+        /// <param name="serverCert"></param>
+        /// <param name="clientCert"></param>
+        /// <param name="nombreServerCert"></param>
+        /// <returns></returns>
         internal abstract IScsClient CreateSecureClient(X509Certificate2 serverCert, X509Certificate2 clientCert, string nombreServerCert);
     }
 }

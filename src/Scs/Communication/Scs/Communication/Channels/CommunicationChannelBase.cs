@@ -107,7 +107,7 @@ namespace Hik.Communication.Scs.Communication.Channels
         {
             if (message == null)
             {
-                throw new ArgumentNullException("message");
+                throw new ArgumentNullException(nameof(message));
             }
 
             SendMessageInternal(message);
@@ -139,10 +139,7 @@ namespace Hik.Communication.Scs.Communication.Channels
         protected virtual void OnDisconnected()
         {
             var handler = Disconnected;
-            if (handler != null)
-            {
-                handler(this, EventArgs.Empty);
-            }
+            handler?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -152,10 +149,7 @@ namespace Hik.Communication.Scs.Communication.Channels
         protected virtual void OnMessageReceived(IScsMessage message)
         {
             var handler = MessageReceived;
-            if (handler != null)
-            {
-                handler(this, new MessageEventArgs(message));
-            }
+            handler?.Invoke(this, new MessageEventArgs(message));
         }
 
         /// <summary>
@@ -165,10 +159,7 @@ namespace Hik.Communication.Scs.Communication.Channels
         protected virtual void OnMessageSent(IScsMessage message)
         {
             var handler = MessageSent;
-            if (handler != null)
-            {
-                handler(this, new MessageEventArgs(message));
-            }
+            handler?.Invoke(this, new MessageEventArgs(message));
         }
 
         #endregion

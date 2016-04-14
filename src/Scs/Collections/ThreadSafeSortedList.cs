@@ -20,27 +20,27 @@ namespace Hik.Collections
         {
             get
             {
-                _lock.EnterReadLock();
+                LockSlim.EnterReadLock();
                 try
                 {
-                    return _items.ContainsKey(key) ? _items[key] : default(TV);
+                    return Items.ContainsKey(key) ? Items[key] : default(TV);
                 }
                 finally
                 {
-                    _lock.ExitReadLock();
+                    LockSlim.ExitReadLock();
                 }
             }
 
             set
             {
-                _lock.EnterWriteLock();
+                LockSlim.EnterWriteLock();
                 try
                 {
-                    _items[key] = value;
+                    Items[key] = value;
                 }
                 finally
                 {
-                    _lock.ExitWriteLock();
+                    LockSlim.ExitWriteLock();
                 }
             }
         }
@@ -52,14 +52,14 @@ namespace Hik.Collections
         {
             get
             {
-                _lock.EnterReadLock();
+                LockSlim.EnterReadLock();
                 try
                 {
-                    return _items.Count;
+                    return Items.Count;
                 }
                 finally
                 {
-                    _lock.ExitReadLock();
+                    LockSlim.ExitReadLock();
                 }
             }
         }
@@ -67,20 +67,20 @@ namespace Hik.Collections
         /// <summary>
         /// Internal collection to store items.
         /// </summary>
-        protected readonly SortedList<TK, TV> _items;
+        protected readonly SortedList<TK, TV> Items;
 
         /// <summary>
         /// Used to synchronize access to _items list.
         /// </summary>
-        protected readonly ReaderWriterLockSlim _lock;
+        protected readonly ReaderWriterLockSlim LockSlim;
 
         /// <summary>
         /// Creates a new ThreadSafeSortedList object.
         /// </summary>
         public ThreadSafeSortedList()
         {
-            _items = new SortedList<TK, TV>();
-            _lock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+            Items = new SortedList<TK, TV>();
+            LockSlim = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
         }
 
         /// <summary>
@@ -90,14 +90,14 @@ namespace Hik.Collections
         /// <returns>True; if collection contains given key</returns>
         public bool ContainsKey(TK key)
         {
-            _lock.EnterReadLock();
+            LockSlim.EnterReadLock();
             try
             {
-                return _items.ContainsKey(key);
+                return Items.ContainsKey(key);
             }
             finally
             {
-                _lock.ExitReadLock();
+                LockSlim.ExitReadLock();
             }
         }
 
@@ -108,14 +108,14 @@ namespace Hik.Collections
         /// <returns>True; if collection contains given item</returns>
         public bool ContainsValue(TV item)
         {
-            _lock.EnterReadLock();
+            LockSlim.EnterReadLock();
             try
             {
-                return _items.ContainsValue(item);
+                return Items.ContainsValue(item);
             }
             finally
             {
-                _lock.ExitReadLock();
+                LockSlim.ExitReadLock();
             }
         }
 
@@ -125,20 +125,20 @@ namespace Hik.Collections
         /// <param name="key">Key of item to remove</param>
         public bool Remove(TK key)
         {
-            _lock.EnterWriteLock();
+            LockSlim.EnterWriteLock();
             try
             {
-                if (!_items.ContainsKey(key))
+                if (!Items.ContainsKey(key))
                 {
                     return false;
                 }
 
-                _items.Remove(key);
+                Items.Remove(key);
                 return true;
             }
             finally
             {
-                _lock.ExitWriteLock();
+                LockSlim.ExitWriteLock();
             }
         }
 
@@ -148,14 +148,14 @@ namespace Hik.Collections
         /// <returns>Item list</returns>
         public List<TV> GetAllItems()
         {
-            _lock.EnterReadLock();
+            LockSlim.EnterReadLock();
             try
             {
-                return new List<TV>(_items.Values);
+                return new List<TV>(Items.Values);
             }
             finally
             {
-                _lock.ExitReadLock();
+                LockSlim.ExitReadLock();
             }
         }
 
@@ -164,14 +164,14 @@ namespace Hik.Collections
         /// </summary>
         public void ClearAll()
         {
-            _lock.EnterWriteLock();
+            LockSlim.EnterWriteLock();
             try
             {
-                _items.Clear();
+                Items.Clear();
             }
             finally
             {
-                _lock.ExitWriteLock();
+                LockSlim.ExitWriteLock();
             }
         }
 
@@ -181,16 +181,16 @@ namespace Hik.Collections
         /// <returns>Item list</returns>
         public List<TV> GetAndClearAllItems()
         {
-            _lock.EnterWriteLock();
+            LockSlim.EnterWriteLock();
             try
             {
-                var list = new List<TV>(_items.Values);
-                _items.Clear();
+                var list = new List<TV>(Items.Values);
+                Items.Clear();
                 return list;
             }
             finally
             {
-                _lock.ExitWriteLock();
+                LockSlim.ExitWriteLock();
             }
         }
     }

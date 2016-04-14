@@ -29,10 +29,7 @@ namespace Hik.Communication.Scs.Communication.Channels
         protected virtual void OnCommunicationChannelConnected(ICommunicationChannel client)
         {
             var handler = CommunicationChannelConnected;
-            if (handler != null)
-            {
-                handler(this, new CommunicationChannelEventArgs(client));
-            }
+            handler?.Invoke(this, new CommunicationChannelEventArgs(client));
         }
     }
 }

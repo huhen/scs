@@ -1,5 +1,4 @@
-﻿using Hik.Communication.Scs.Communication;
-using Hik.Communication.Scs.Communication.Messengers;
+﻿using Hik.Communication.Scs.Communication.Messengers;
 using Hik.Communication.Scs.Server;
 
 namespace Hik.Communication.ScsServices.Service

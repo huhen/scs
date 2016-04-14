@@ -64,11 +64,12 @@ namespace Hik.Communication.Scs.Communication.EndPoints.Tcp
             return new ScsTcpServer(this);
         }
 
-       /// <summary>
-       /// SSL
-       /// </summary>
-       /// <param name="certificate"></param>
-       /// <returns></returns>
+        /// <summary>
+        /// SSL
+        /// </summary>
+        /// <param name="serverCert"></param>
+        /// <param name="clientCerts"></param>
+        /// <returns></returns>
         internal override IScsServer CreateSecureServer(X509Certificate2 serverCert, List<X509Certificate2> clientCerts)
         {
             return new ScsTcpSslServer(this, serverCert, clientCerts);
@@ -82,14 +83,14 @@ namespace Hik.Communication.Scs.Communication.EndPoints.Tcp
         {
             return new ScsTcpClient(this);
         }
-        
-      /// <summary>
-      /// SSL
-      /// </summary>
-      /// <param name="certificateName"></param>
-      /// <param name="acceptSelfSignedCerts"></param>
-      /// <param name="nombreServerCert"></param>
-      /// <returns></returns>
+
+        /// <summary>
+        /// SSL
+        /// </summary>
+        /// <param name="serverCert"></param>
+        /// <param name="clientCert"></param>
+        /// <param name="nombreServerCert"></param>
+        /// <returns></returns>
         internal override IScsClient CreateSecureClient(X509Certificate2 serverCert, X509Certificate2 clientCert, string nombreServerCert)
         {
             return new ScsTcpSslClient(this, serverCert, clientCert, nombreServerCert);

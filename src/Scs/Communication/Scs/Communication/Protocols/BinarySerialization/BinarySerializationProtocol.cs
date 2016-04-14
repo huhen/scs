@@ -235,7 +235,7 @@ namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
             _receiveMemoryStream.Write(remainingBytes, 0, remainingBytes.Length);
             
             //Return true to re-call this method to try to read next message
-            return (remainingBytes.Length > 4);
+            return remainingBytes.Length > 4;
         }
 
         /// <summary>
@@ -301,6 +301,12 @@ namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
         /// </summary>
         protected sealed class DeserializationAppDomainBinder : SerializationBinder
         {
+            /// <summary>
+            /// BindToType
+            /// </summary>
+            /// <param name="assemblyName"></param>
+            /// <param name="typeName"></param>
+            /// <returns></returns>
             public override Type BindToType(string assemblyName, string typeName)
             {
                 var toAssemblyName = assemblyName.Split(',')[0];

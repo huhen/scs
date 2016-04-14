@@ -23,7 +23,7 @@ namespace Hik.Communication.Scs.Client.Tcp
         private readonly X509Certificate2 _serverCert;
         private readonly X509Certificate2 _clientCert;
         private readonly string _nombreServerCert;
-      
+
         /// <summary>
         /// 
         /// </summary>
@@ -45,17 +45,13 @@ namespace Hik.Communication.Scs.Client.Tcp
         /// <returns>Ready communication channel to communicate</returns>
         protected override ICommunicationChannel CreateCommunicationChannel()
         {
-            TcpClient client = new TcpClient();
-            SslStream sslStream;
-            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            var client = new TcpClient();
 
             try
             {
-                client = new TcpClient();
                 client.Connect(new IPEndPoint(IPAddress.Parse(_serverEndPoint.IpAddress), _serverEndPoint.TcpPort));
 
-                sslStream = new SslStream(client.GetStream(), false, new RemoteCertificateValidationCallback(ValidateCertificate),
-                    new LocalCertificateSelectionCallback(SelectLocalCertificate));
+                var sslStream = new SslStream(client.GetStream(), false, ValidateCertificate, SelectLocalCertificate);
 
                 X509Certificate2Collection clientCertificates = new X509Certificate2Collection();
                 if (_clientCert != null)
@@ -66,14 +62,13 @@ namespace Hik.Communication.Scs.Client.Tcp
                 sslStream.AuthenticateAsClient(_nombreServerCert, clientCertificates, SslProtocols.Default, false);
 
 
-                return new TcpSslCommunicationChannel( _serverEndPoint, client, sslStream);
+                return new TcpSslCommunicationChannel(_serverEndPoint, client, sslStream);
             }
             catch (AuthenticationException)
             {
                 client.Close();
                 throw;
             }
-
         }
 
         public bool ValidateCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
@@ -84,7 +79,7 @@ namespace Hik.Communication.Scs.Client.Tcp
             }
             else
             {
-                return (sslPolicyErrors == SslPolicyErrors.None);
+                return sslPolicyErrors == SslPolicyErrors.None;
             }
         }
 

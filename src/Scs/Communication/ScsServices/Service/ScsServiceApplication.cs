@@ -64,7 +64,7 @@ namespace Hik.Communication.ScsServices.Service
         {
             if (scsServer == null)
             {
-                throw new ArgumentNullException("scsServer");
+                throw new ArgumentNullException(nameof(scsServer));
             }
 
             _scsServer = scsServer;
@@ -109,7 +109,7 @@ namespace Hik.Communication.ScsServices.Service
         {
             if (service == null)
             {
-                throw new ArgumentNullException("service");
+                throw new ArgumentNullException(nameof(service));
             }
 
             var type = typeof(TServiceInterface);
@@ -230,21 +230,18 @@ namespace Hik.Communication.ScsServices.Service
                 {
                     var innerEx = ex.InnerException;
                     //Si el atributo de servicio del objeto es null, al momento de levantar la excepcion no se muestra el error real sino un Object Reference
-                    string detalle = serviceObject.ServiceAttribute != null ? (Environment.NewLine + "Service Version: " + serviceObject.ServiceAttribute.Version) : "";
+                    var detalle = serviceObject.ServiceAttribute != null ? (Environment.NewLine + "Service Version: " + serviceObject.ServiceAttribute.Version) : "";
                     var excepcion = new ScsRemoteException(innerEx.Message + detalle, innerEx);
                     SendInvokeResponse(requestReplyMessenger, invokeMessage, null, excepcion);
-                    return;
                 }
                 catch (Exception ex)
                 {
                     SendInvokeResponse(requestReplyMessenger, invokeMessage, null, new ScsRemoteException(ex.Message + Environment.NewLine + "Service Version: " + serviceObject.ServiceAttribute.Version, ex));
-                    return;
                 }
             }
             catch (Exception ex)
             {
                 SendInvokeResponse(requestReplyMessenger, invokeMessage, null, new ScsRemoteException("An error occured during remote service method call.", ex));
-                return;
             }
         }
 
@@ -255,8 +252,8 @@ namespace Hik.Communication.ScsServices.Service
         /// <param name="requestMessage">Request message</param>
         /// <param name="returnValue">Return value to send</param>
         /// <param name="exception">Exception to send</param>
-        /// <param name="Parameters">Los parametros posiblemente modificados en la llamada al metodo mediante out o ref</param>
-        private static void SendInvokeResponse(IMessenger client, IScsMessage requestMessage, object returnValue, ScsRemoteException exception, object[] Parameters = null)
+        /// <param name="parameters">Los parametros posiblemente modificados en la llamada al metodo mediante out o ref</param>
+        private static void SendInvokeResponse(IMessenger client, IScsMessage requestMessage, object returnValue, ScsRemoteException exception, object[] parameters = null)
         {
             try
             {
@@ -267,7 +264,7 @@ namespace Hik.Communication.ScsServices.Service
                             ReturnValue = returnValue,
                             RemoteException = exception,
                             //Se devuelven todos los parametros con su respectiva modificacion a fin de poder tener metodos con out y ref
-                            Parameters = Parameters
+                            Parameters = parameters
                         });
             }
             catch (Exception ex)
@@ -294,10 +291,7 @@ namespace Hik.Communication.ScsServices.Service
         private void OnClientConnected(IScsServiceClient client)
         {
             var handler = ClientConnected;
-            if (handler != null)
-            {
-                handler(this, new ServiceClientEventArgs(client));
-            }
+            handler?.Invoke(this, new ServiceClientEventArgs(client));
         }
 
         /// <summary>
@@ -307,10 +301,7 @@ namespace Hik.Communication.ScsServices.Service
         private void OnClientDisconnected(IScsServiceClient client)
         {
             var handler = ClientDisconnected;
-            if (handler != null)
-            {
-                handler(this, new ServiceClientEventArgs(client));
-            }
+            handler?.Invoke(this, new ServiceClientEventArgs(client));
         }
 
         #endregion
@@ -355,7 +346,7 @@ namespace Hik.Communication.ScsServices.Service
                 }
 
                 _methods = new SortedList<string, MethodInfo>();
-                buscarMetodos(serviceInterfaceType);
+                BuscarMetodos(serviceInterfaceType);
 
             }
 
@@ -363,7 +354,7 @@ namespace Hik.Communication.ScsServices.Service
             /// Permite buscar los metodos no solo de la interface que implementa la clase de servicio sino tambien de las interfaces heredadas
             /// </summary>
             /// <param name="serviceInterfaceType"></param>
-            void buscarMetodos(Type serviceInterfaceType)
+            private void BuscarMetodos(Type serviceInterfaceType)
             {
                 if (serviceInterfaceType == null)
                     return;
@@ -371,7 +362,7 @@ namespace Hik.Communication.ScsServices.Service
                     _methods.Add(methodInfo.Name, methodInfo);
 
                 foreach (var p in serviceInterfaceType.GetInterfaces())
-                    buscarMetodos(p);
+                    BuscarMetodos(p);
             }
 
             /// <summary>

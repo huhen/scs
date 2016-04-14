@@ -69,7 +69,7 @@ namespace Hik.Communication.ScsServices.Client
         /// <summary>
         /// Es util para almacenar cosas dentro del objeto
         /// </summary>
-        public object tag { get; set; }
+        public object Tag { get; set; }
 
         #endregion
 
@@ -256,10 +256,7 @@ namespace Hik.Communication.ScsServices.Client
         private void OnConnected()
         {
             var handler = Connected;
-            if (handler != null)
-            {
-                handler(this, EventArgs.Empty);
-            }
+            handler?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -268,10 +265,7 @@ namespace Hik.Communication.ScsServices.Client
         private void OnDisconnected()
         {
             var handler = Disconnected;
-            if (handler != null)
-            {
-                handler(this, EventArgs.Empty);
-            }
+            handler?.Invoke(this, EventArgs.Empty);
         }
 
         #endregion
