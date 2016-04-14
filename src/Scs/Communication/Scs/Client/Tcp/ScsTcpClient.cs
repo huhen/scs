@@ -31,10 +31,7 @@ namespace Hik.Communication.Scs.Client.Tcp
         protected override ICommunicationChannel CreateCommunicationChannel()
         {
             return new TcpCommunicationChannel(
-                TcpHelper.ConnectToServer(
-                    new IPEndPoint(IPAddress.Parse(_serverEndPoint.IpAddress), _serverEndPoint.TcpPort),
-                    ConnectTimeout
-                    ));
+                TcpHelper.ConnectToServer(_serverEndPoint,ConnectTimeout));
         }
     }
 }

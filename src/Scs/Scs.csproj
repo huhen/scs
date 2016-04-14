@@ -124,6 +124,12 @@
   <ItemGroup>
     <Content Include="Changes.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ProxyConfig\ProxyConfig.csproj">
+      <Project>{806acd68-496f-42b3-a007-e014bc796cd8}</Project>
+      <Name>ProxyConfig</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

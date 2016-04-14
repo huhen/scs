@@ -1,8 +1,6 @@
-﻿
-using Hik.Communication.Scs.Communication.Channels;
+﻿using Hik.Communication.Scs.Communication.Channels;
 using Hik.Communication.Scs.Communication.Channels.Tcp;
 using Hik.Communication.Scs.Communication.EndPoints.Tcp;
-using System.Net;
 using System.Net.Sockets;
 using System.Net.Security;
 using System.Security.Authentication;
@@ -49,7 +47,8 @@ namespace Hik.Communication.Scs.Client.Tcp
 
             try
             {
-                client.Connect(new IPEndPoint(IPAddress.Parse(_serverEndPoint.IpAddress), _serverEndPoint.TcpPort));
+                client.Client = TcpHelper.ConnectToServer(_serverEndPoint, ConnectTimeout);
+                //client.Connect(new IPEndPoint(IPAddress.Parse(_serverEndPoint.IpAddress), _serverEndPoint.TcpPort));
 
                 var sslStream = new SslStream(client.GetStream(), false, ValidateCertificate, SelectLocalCertificate);
 

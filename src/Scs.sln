@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 2013 for Web
-VisualStudioVersion = 12.0.40629.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scs", "Scs\Scs.csproj", "{0DC81B09-3ABF-4BB3-8C08-4E8EE4432BDC}"
 EndProject
@@ -22,6 +22,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalculatorCommonLib", "..\samples\SimpleCalculatorSystem\CalculatorCommonLib\CalculatorCommonLib.csproj", "{6F2D58C9-0395-4048-A304-17304D12BC63}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalculatorServer", "..\samples\SimpleCalculatorSystem\CalculatorServer\CalculatorServer.csproj", "{1BB6B428-E4C3-467F-824F-1DB84E310FF2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProxyConfig", "ProxyConfig\ProxyConfig.csproj", "{806ACD68-496F-42B3-A007-E014BC796CD8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProxyConfigApp", "ProxyConfigApp\ProxyConfigApp.csproj", "{E4428A4C-30EF-4824-8543-ACB1315C2261}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -103,6 +107,30 @@ Global
 		{1BB6B428-E4C3-467F-824F-1DB84E310FF2}.Release|Mixed Platforms.Build.0 = Release|x86
 		{1BB6B428-E4C3-467F-824F-1DB84E310FF2}.Release|x86.ActiveCfg = Release|x86
 		{1BB6B428-E4C3-467F-824F-1DB84E310FF2}.Release|x86.Build.0 = Release|x86
+		{806ACD68-496F-42B3-A007-E014BC796CD8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{806ACD68-496F-42B3-A007-E014BC796CD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{806ACD68-496F-42B3-A007-E014BC796CD8}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{806ACD68-496F-42B3-A007-E014BC796CD8}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{806ACD68-496F-42B3-A007-E014BC796CD8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{806ACD68-496F-42B3-A007-E014BC796CD8}.Debug|x86.Build.0 = Debug|Any CPU
+		{806ACD68-496F-42B3-A007-E014BC796CD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{806ACD68-496F-42B3-A007-E014BC796CD8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{806ACD68-496F-42B3-A007-E014BC796CD8}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{806ACD68-496F-42B3-A007-E014BC796CD8}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{806ACD68-496F-42B3-A007-E014BC796CD8}.Release|x86.ActiveCfg = Release|Any CPU
+		{806ACD68-496F-42B3-A007-E014BC796CD8}.Release|x86.Build.0 = Release|Any CPU
+		{E4428A4C-30EF-4824-8543-ACB1315C2261}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4428A4C-30EF-4824-8543-ACB1315C2261}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4428A4C-30EF-4824-8543-ACB1315C2261}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E4428A4C-30EF-4824-8543-ACB1315C2261}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E4428A4C-30EF-4824-8543-ACB1315C2261}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E4428A4C-30EF-4824-8543-ACB1315C2261}.Debug|x86.Build.0 = Debug|Any CPU
+		{E4428A4C-30EF-4824-8543-ACB1315C2261}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4428A4C-30EF-4824-8543-ACB1315C2261}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4428A4C-30EF-4824-8543-ACB1315C2261}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E4428A4C-30EF-4824-8543-ACB1315C2261}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E4428A4C-30EF-4824-8543-ACB1315C2261}.Release|x86.ActiveCfg = Release|Any CPU
+		{E4428A4C-30EF-4824-8543-ACB1315C2261}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
