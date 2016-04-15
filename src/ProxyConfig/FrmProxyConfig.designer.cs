@@ -158,6 +158,7 @@
             // rbSocks5
             // 
             this.rbSocks5.AutoSize = true;
+            this.rbSocks5.Enabled = false;
             this.rbSocks5.Location = new System.Drawing.Point(6, 65);
             this.rbSocks5.Name = "rbSocks5";
             this.rbSocks5.Size = new System.Drawing.Size(67, 17);
@@ -169,6 +170,7 @@
             // rbSocks4
             // 
             this.rbSocks4.AutoSize = true;
+            this.rbSocks4.Enabled = false;
             this.rbSocks4.Location = new System.Drawing.Point(6, 42);
             this.rbSocks4.Name = "rbSocks4";
             this.rbSocks4.Size = new System.Drawing.Size(67, 17);
