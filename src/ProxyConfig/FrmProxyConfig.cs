@@ -25,12 +25,14 @@ namespace ProxyConfig
 
         private void btOk_Click(object sender, EventArgs e)
         {
-            var proxyConfig = new ProxyConfig();
-            proxyConfig.ProxyEnable = cbEnableProxy.Checked;
-            proxyConfig.ProxyAddress = tbProxyAddress.Text;
-            proxyConfig.ProxyPort = _proxyPort;
-            proxyConfig.ProxyUserName = tbProxyUserName.Text;
-            proxyConfig.ProxyPassword = tbProxyUserPassword.Text;
+            var proxyConfig = new ProxyConfig
+            {
+                ProxyEnable = cbEnableProxy.Checked,
+                ProxyAddress = tbProxyAddress.Text,
+                ProxyPort = _proxyPort,
+                ProxyUserName = tbProxyUserName.Text,
+                ProxyPassword = tbProxyUserPassword.Text
+            };
             if (rbHttp.Checked) proxyConfig.ProxyType = rbHttp.Text;
             if (rbSocks4.Checked) proxyConfig.ProxyType = rbSocks4.Text;
             if (rbSocks5.Checked) proxyConfig.ProxyType = rbSocks5.Text;

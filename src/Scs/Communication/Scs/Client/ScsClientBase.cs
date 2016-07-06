@@ -66,35 +66,17 @@ namespace Hik.Communication.Scs.Client
         /// <summary>
         /// Gets the communication state of the Client.
         /// </summary>
-        public CommunicationStates CommunicationState
-        {
-            get
-            {
-                return _communicationChannel?.CommunicationState ?? CommunicationStates.Disconnected;
-            }
-        }
+        public CommunicationStates CommunicationState => _communicationChannel?.CommunicationState ?? CommunicationStates.Disconnected;
 
         /// <summary>
         /// Gets the time of the last succesfully received message.
         /// </summary>
-        public DateTime LastReceivedMessageTime
-        {
-            get
-            {
-                return _communicationChannel?.LastReceivedMessageTime ?? DateTime.MinValue;
-            }
-        }
+        public DateTime LastReceivedMessageTime => _communicationChannel?.LastReceivedMessageTime ?? DateTime.MinValue;
 
         /// <summary>
         /// Gets the time of the last succesfully received message.
         /// </summary>
-        public DateTime LastSentMessageTime
-        {
-            get
-            {
-                return _communicationChannel?.LastSentMessageTime ?? DateTime.MinValue;
-            }
-        }
+        public DateTime LastSentMessageTime => _communicationChannel?.LastSentMessageTime ?? DateTime.MinValue;
 
         /// <summary>
         /// Es util para almacenar cosas dentro del objeto
@@ -108,7 +90,7 @@ namespace Hik.Communication.Scs.Client
         /// <summary>
         /// Default timeout value for connecting a server.
         /// </summary>
-        private const int DefaultConnectionAttemptTimeout = 15000; //15 seconds.
+        private const int _defaultConnectionAttemptTimeout = 15000; //15 seconds.
 
         /// <summary>
         /// The communication channel that is used by client to send and receive messages.
@@ -121,7 +103,7 @@ namespace Hik.Communication.Scs.Client
         private readonly Timer _pingTimer;
 
         #endregion
-        
+
         #region Constructor
 
         /// <summary>
@@ -131,7 +113,7 @@ namespace Hik.Communication.Scs.Client
         {
             _pingTimer = new Timer(30000);
             _pingTimer.Elapsed += PingTimer_Elapsed;
-            ConnectTimeout = DefaultConnectionAttemptTimeout;
+            ConnectTimeout = _defaultConnectionAttemptTimeout;
             WireProtocol = WireProtocolManager.GetDefaultWireProtocol();
         }
 
@@ -264,6 +246,7 @@ namespace Hik.Communication.Scs.Client
 
                 _communicationChannel.SendMessage(new ScsPingMessage());
             }
+            // ReSharper disable once EmptyGeneralCatchClause
             catch
             {
 

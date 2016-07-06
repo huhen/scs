@@ -18,7 +18,7 @@ namespace Hik.Communication.Scs.Communication.Messages
         /// </summary>
         public ScsRawDataMessage()
         {
-            
+
         }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace Hik.Communication.Scs.Communication.Messages
             MessageData = messageData;
         }
 
-                /// <summary>
+        /// <summary>
         /// Creates a new reply ScsRawDataMessage object with MessageData property.
         /// </summary>
         /// <param name="messageData">Message data that is being transmitted</param>
@@ -52,8 +52,7 @@ namespace Hik.Communication.Scs.Communication.Messages
         {
             var messageLength = MessageData?.Length ?? 0;
             return string.IsNullOrEmpty(RepliedMessageId)
-                       ? string.Format("ScsRawDataMessage [{0}]: {1} bytes", MessageId, messageLength)
-                       : string.Format("ScsRawDataMessage [{0}] Replied To [{1}]: {2} bytes", MessageId, RepliedMessageId, messageLength);
+                       ? $"ScsRawDataMessage [{MessageId}]: {messageLength} bytes" : $"ScsRawDataMessage [{MessageId}] Replied To [{RepliedMessageId}]: {messageLength} bytes";
         }
     }
 }

@@ -74,12 +74,11 @@ namespace Hik.Communication.Scs.Client.Tcp
         {
             if (sslPolicyErrors == SslPolicyErrors.RemoteCertificateChainErrors)
             {
-                return _serverCert.GetCertHashString().Equals(certificate.GetCertHashString());
+                var hashString = _serverCert.GetCertHashString();
+                return hashString != null && hashString.Equals(certificate.GetCertHashString());
             }
-            else
-            {
-                return sslPolicyErrors == SslPolicyErrors.None;
-            }
+
+            return sslPolicyErrors == SslPolicyErrors.None;
         }
 
         public X509Certificate SelectLocalCertificate(object sender, string targetHost, X509CertificateCollection localCertificates, X509Certificate remoteCertificate, string[] acceptableIssuers)

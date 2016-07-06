@@ -52,7 +52,7 @@ namespace Hik.Communication.ScsServices.Client
         /// <summary>
         /// Reference to the service proxy to invoke remote service methods.
         /// </summary>
-        public T ServiceProxy { get; private set; }
+        public T ServiceProxy { get; }
 
         /// <summary>
         /// Timeout value when invoking a service method.
@@ -88,6 +88,7 @@ namespace Hik.Communication.ScsServices.Client
         /// <summary>
         /// This object is used to create a transparent proxy to invoke remote methods on server.
         /// </summary>
+        // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
         private readonly AutoConnectRemoteInvokeProxy<T, IScsClient> _realServiceProxy;
 
         /// <summary>
@@ -220,7 +221,7 @@ namespace Hik.Communication.ScsServices.Client
             }
             catch
             {
-
+                // ignored
             }
         }
         

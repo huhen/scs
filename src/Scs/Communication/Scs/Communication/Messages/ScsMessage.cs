@@ -52,8 +52,7 @@ namespace Hik.Communication.Scs.Communication.Messages
         public override string ToString()
         {
             return string.IsNullOrEmpty(RepliedMessageId)
-                       ? string.Format("ScsMessage [{0}]", MessageId)
-                       : string.Format("ScsMessage [{0}] Replied To [{1}]", MessageId, RepliedMessageId);
+                       ? $"ScsMessage [{MessageId}]" : $"ScsMessage [{MessageId}] Replied To [{RepliedMessageId}]";
         }
     }
 }

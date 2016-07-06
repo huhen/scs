@@ -1,7 +1,6 @@
 ﻿using Hik.Communication.Scs.Communication.Channels;
 using Hik.Communication.Scs.Communication.Channels.Tcp;
 using Hik.Communication.Scs.Communication.EndPoints.Tcp;
-using System.Net;
 
 namespace Hik.Communication.Scs.Client.Tcp
 {

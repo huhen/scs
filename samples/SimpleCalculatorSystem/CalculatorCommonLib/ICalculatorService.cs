@@ -12,6 +12,6 @@ namespace CalculatorCommonLib
 
         double Divide(double number1, double number2);
 
-        double multiplicar(double a, double b, ref double resultado, out string mensaje, string[] otrosValores, ref int k, bool haceAlgo, out string[] otrosValores2);
+        double Multiplicar(double a, double b, out double resultado, out string mensaje, string[] otrosValores, ref int k, bool haceAlgo, out string[] otrosValores2);
     }
 }

@@ -20,7 +20,7 @@ namespace Hik.Communication.Scs.Communication.EndPoints.Tcp
         ///<summary>
         /// Listening TCP Port for incoming connection requests on server.
         ///</summary>
-        public int TcpPort { get; private set; }
+        public int TcpPort { get; }
 
         /// <summary>
         /// Creates a new ScsTcpEndPoint object with specified port number.
@@ -102,7 +102,7 @@ namespace Hik.Communication.Scs.Communication.EndPoints.Tcp
         /// <returns>String representation of this end point object</returns>
         public override string ToString()
         {
-            return string.IsNullOrEmpty(IpAddress) ? ("tcp://" + TcpPort) : ("tcp://" + IpAddress + ":" + TcpPort);
+            return string.IsNullOrEmpty(IpAddress) ? "tcp://" + TcpPort : "tcp://" + IpAddress + ":" + TcpPort;
         }
     }
 }

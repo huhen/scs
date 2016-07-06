@@ -230,7 +230,7 @@ namespace Hik.Communication.ScsServices.Service
                 {
                     var innerEx = ex.InnerException;
                     //Si el atributo de servicio del objeto es null, al momento de levantar la excepcion no se muestra el error real sino un Object Reference
-                    var detalle = serviceObject.ServiceAttribute != null ? (Environment.NewLine + "Service Version: " + serviceObject.ServiceAttribute.Version) : "";
+                    var detalle = serviceObject.ServiceAttribute != null ? Environment.NewLine + "Service Version: " + serviceObject.ServiceAttribute.Version : string.Empty;
                     var excepcion = new ScsRemoteException(innerEx.Message + detalle, innerEx);
                     SendInvokeResponse(requestReplyMessenger, invokeMessage, null, excepcion);
                 }
@@ -280,7 +280,10 @@ namespace Hik.Communication.ScsServices.Service
                         });
                 }
 
-                catch { }
+                catch
+                {
+                    // ignored
+                }
             }
         }
 
@@ -317,7 +320,7 @@ namespace Hik.Communication.ScsServices.Service
             /// <summary>
             /// The service object that is used to invoke methods on.
             /// </summary>
-            public ScsService Service { get; private set; }
+            public ScsService Service { get; }
 
             /// <summary>
             /// ScsService attribute of Service object's class.

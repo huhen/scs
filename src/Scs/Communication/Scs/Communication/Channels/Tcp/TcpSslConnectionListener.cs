@@ -4,6 +4,8 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using Hik.Communication.Scs.Communication.EndPoints.Tcp;
 using System.Collections.Generic;
+using System.Linq;
+
 namespace Hik.Communication.Scs.Communication.Channels.Tcp
 {
     /// <summary>
@@ -89,7 +91,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
             }
             catch
             {
-
+                // ignored
             }
         }
 
@@ -106,7 +108,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
                     var client = _listenerSocket.AcceptTcpClient();
                     if (client.Connected)
                     {
-                        SslStream sslStream = new SslStream(client.GetStream(), false, ValidateCertificate); 
+                        SslStream sslStream = new SslStream(client.GetStream(), false, ValidateCertificate);
                         sslStream.AuthenticateAsServer(_serverCert, true, System.Security.Authentication.SslProtocols.Default, true);
 
                         OnCommunicationChannelConnected(new TcpSslCommunicationChannel(_endPoint, client, sslStream));
@@ -128,7 +130,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
                     }
                     catch
                     {
-
+                        // ignored
                     }
                 }
             }
@@ -144,7 +146,6 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         /// <returns></returns>
         public bool ValidateCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
-
             if (_clientCerts == null)
             {
                 return false;
@@ -152,15 +153,10 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
 
             if ((sslPolicyErrors == SslPolicyErrors.RemoteCertificateChainErrors) && (_clientCerts != null))
             {
-                foreach (var clientCert in _clientCerts)
-                    if (clientCert.GetCertHashString().Equals(certificate.GetCertHashString()))
-                        return true;
-                return false;
+                return _clientCerts.Select(clientCert => clientCert.GetCertHashString()).Any(hashString => hashString != null && hashString.Equals(certificate.GetCertHashString()));
             }
-            else
-            {
-                return sslPolicyErrors == SslPolicyErrors.None;
-            }
+
+            return sslPolicyErrors == SslPolicyErrors.None;
         }
     }
 }

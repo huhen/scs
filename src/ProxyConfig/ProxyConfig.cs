@@ -53,7 +53,7 @@ namespace ProxyConfig
             var config = new ProxyConfig() { ProxyType = string.Empty, ProxyAddress = string.Empty, ProxyPort = 0, ProxyUserName = string.Empty, ProxyPassword = string.Empty, ProxyEnable = false, ProxyPasswordEncrypted = false };
             try
             {
-                var proxyConfigPath = Path.Combine(Path.GetDirectoryName(new Uri(Assembly.GetEntryAssembly().EscapedCodeBase).LocalPath), _proxyConfigName);
+                var proxyConfigPath = Path.Combine(Path.GetDirectoryName(new Uri(Assembly.GetEntryAssembly().EscapedCodeBase).LocalPath) ?? string.Empty, _proxyConfigName);
                 if (!File.Exists(proxyConfigPath)) return config;
                 var serializer = new XmlSerializer(typeof(ProxyConfig));
                 using (var reader = new StreamReader(proxyConfigPath))
@@ -62,12 +62,14 @@ namespace ProxyConfig
                     reader.Close();
                 }
             }
+            // ReSharper disable once EmptyGeneralCatchClause
             catch { }
 
             if (config.ProxyPasswordEncrypted)
             {
                 config.ProxyPassword = Decrypt(config.ProxyPassword);
-            }else
+            }
+            else
             {
                 SetConfig(config);
             }
@@ -115,7 +117,7 @@ namespace ProxyConfig
             if (proxyConfig == null) return false;
             try
             {
-                var proxyConfigPath = Path.Combine(Path.GetDirectoryName(new Uri(Assembly.GetEntryAssembly().EscapedCodeBase).LocalPath), _proxyConfigName);
+                var proxyConfigPath = Path.Combine(Path.GetDirectoryName(new Uri(Assembly.GetEntryAssembly().EscapedCodeBase).LocalPath) ?? string.Empty, _proxyConfigName);
                 var serializer = new XmlSerializer(typeof(ProxyConfig));
                 using (var writer = new StreamWriter(proxyConfigPath))
                 {

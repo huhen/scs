@@ -28,29 +28,17 @@ namespace Hik.Communication.ScsServices.Service
         /// <summary>
         /// Unique identifier for this client.
         /// </summary>
-        public string ClientId
-        {
-            get { return _serverClient.ClientId; }
-        }
+        public string ClientId => _serverClient.ClientId;
 
         ///<summary>
         /// Gets endpoint of remote application.
         ///</summary>
-        public ScsEndPoint RemoteEndPoint
-        {
-            get { return _serverClient.RemoteEndPoint; }
-        }
+        public ScsEndPoint RemoteEndPoint => _serverClient.RemoteEndPoint;
 
         /// <summary>
         /// Gets the communication state of the Client.
         /// </summary>
-        public CommunicationStates CommunicationState
-        {
-            get
-            {
-                return _serverClient.CommunicationState;
-            }
-        }
+        public CommunicationStates CommunicationState => _serverClient.CommunicationState;
 
         #endregion
 

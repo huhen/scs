@@ -142,7 +142,7 @@ namespace Hik.Threading
             }
             catch
             {
-
+                // ignored
             }
             finally
             {

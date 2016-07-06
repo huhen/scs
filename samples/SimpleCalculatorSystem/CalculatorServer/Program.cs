@@ -35,6 +35,7 @@ namespace CalculatorServer
 
         public double Divide(double number1, double number2)
         {
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
             if(number2 == 0.0)
             {
                 throw new DivideByZeroException("number2 can not be zero!");
@@ -43,7 +44,7 @@ namespace CalculatorServer
             return number1 / number2;
         }
 
-        public double multiplicar(double a, double b, ref double resultado, out string mensaje, string[] otrosValores, ref int k, bool haceAlgo, out string[] otrosValores2)
+        public double Multiplicar(double a, double b, out double resultado, out string mensaje, string[] otrosValores, ref int k, bool haceAlgo, out string[] otrosValores2)
         {
             otrosValores2 = null;
             mensaje = Guid.NewGuid().ToString();
@@ -51,7 +52,7 @@ namespace CalculatorServer
             k += (int)resultado; 
             if (haceAlgo)
             {
-                otrosValores2 = new string[2] { "pedro", "almodovar" };
+                otrosValores2 = new [] { "pedro", "almodovar" };
             }
             return resultado;
         }

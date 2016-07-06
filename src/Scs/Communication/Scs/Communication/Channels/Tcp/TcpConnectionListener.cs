@@ -79,7 +79,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
             }
             catch
             {
-
+                // ignored
             }
         }
 
@@ -115,7 +115,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
                     }
                     catch
                     {
-
+                        // ignored
                     }
                 }
             }

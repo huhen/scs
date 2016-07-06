@@ -28,7 +28,7 @@ namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
         /// <summary>
         /// Maximum length of a message.
         /// </summary>
-        private const int MaxMessageLength = 128 * 1024 * 1024; //128 Megabytes.
+        private const int _maxMessageLength = 128 * 1024 * 1024; //128 Megabytes.
 
         /// <summary>
         /// This MemoryStream object is used to collect receiving bytes to build messages.
@@ -60,13 +60,13 @@ namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
         public byte[] GetBytes(IScsMessage message)
         {
             //Serialize the message to a byte array
-            var serializedMessage = SerializeMessage(message); 
-           
+            var serializedMessage = SerializeMessage(message);
+
             //Check for message length
             var messageLength = serializedMessage.Length;
-            if (messageLength > MaxMessageLength)
+            if (messageLength > _maxMessageLength)
             {
-                throw new CommunicationException("Message is too big (" + messageLength + " bytes). Max allowed length is " + MaxMessageLength + " bytes.");
+                throw new CommunicationException("Message is too big (" + messageLength + " bytes). Max allowed length is " + _maxMessageLength + " bytes.");
             }
 
             //Create a byte array including the length of the message (4 bytes) and serialized message content
@@ -155,16 +155,16 @@ namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
             {
                 //Go to head of the stream
                 deserializeMemoryStream.Position = 0;
-                
+
                 //Deserialize the message
                 var binaryFormatter = new BinaryFormatter
                 {
                     AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple,
                     Binder = new DeserializationAppDomainBinder()
                 };
-                
+
                 //Return the deserialized message
-                return (IScsMessage) binaryFormatter.Deserialize(deserializeMemoryStream);
+                return (IScsMessage)binaryFormatter.Deserialize(deserializeMemoryStream);
             }
         }
 
@@ -194,9 +194,9 @@ namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
 
             //Read length of the message
             var messageLength = ReadInt32(_receiveMemoryStream);
-            if (messageLength > MaxMessageLength)
+            if (messageLength > _maxMessageLength)
             {
-                throw new Exception("Message is too big (" + messageLength + " bytes). Max allowed length is " + MaxMessageLength + " bytes.");
+                throw new Exception("Message is too big (" + messageLength + " bytes). Max allowed length is " + _maxMessageLength + " bytes.");
             }
 
             //If message is zero-length (It must not be but good approach to check it)
@@ -217,7 +217,7 @@ namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
             }
 
             //If all bytes of the message is not received yet, return to wait more bytes
-            if (_receiveMemoryStream.Length < (4 + messageLength))
+            if (_receiveMemoryStream.Length < 4 + messageLength)
             {
                 _receiveMemoryStream.Position = _receiveMemoryStream.Length;
                 return false;
@@ -233,7 +233,7 @@ namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
             //Re-create the receive memory stream and write remaining bytes
             _receiveMemoryStream = new MemoryStream();
             _receiveMemoryStream.Write(remainingBytes, 0, remainingBytes.Length);
-            
+
             //Return true to re-call this method to try to read next message
             return remainingBytes.Length > 4;
         }
@@ -249,7 +249,7 @@ namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
             buffer[startIndex] = (byte)((number >> 24) & 0xFF);
             buffer[startIndex + 1] = (byte)((number >> 16) & 0xFF);
             buffer[startIndex + 2] = (byte)((number >> 8) & 0xFF);
-            buffer[startIndex + 3] = (byte)((number) & 0xFF);
+            buffer[startIndex + 3] = (byte)(number & 0xFF);
         }
 
         /// <summary>
@@ -259,11 +259,9 @@ namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
         private static int ReadInt32(Stream stream)
         {
             var buffer = ReadByteArray(stream, 4);
-            return ((buffer[0] << 24) |
+            return (buffer[0] << 24) |
                     (buffer[1] << 16) |
-                    (buffer[2] << 8) |
-                    (buffer[3])
-                   );
+                    (buffer[2] << 8) | buffer[3];
         }
 
         /// <summary>

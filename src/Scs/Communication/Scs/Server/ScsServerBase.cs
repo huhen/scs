@@ -34,7 +34,7 @@ namespace Hik.Communication.Scs.Server
         /// <summary>
         /// A collection of clients that are connected to the server.
         /// </summary>
-        public ThreadSafeSortedList<string, IScsServerClient> Clients { get; private set; }
+        public ThreadSafeSortedList<string, IScsServerClient> Clients { get; }
 
         #endregion
 

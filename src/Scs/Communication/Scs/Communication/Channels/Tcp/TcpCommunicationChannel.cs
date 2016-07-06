@@ -28,13 +28,8 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         ///<summary>
         /// Gets the endpoint of remote application.
         ///</summary>
-        public override ScsEndPoint RemoteEndPoint
-        {
-            get
-            {
-                return _remoteEndPoint;
-            }
-        }
+        public override ScsEndPoint RemoteEndPoint => _remoteEndPoint;
+
         private readonly ScsTcpEndPoint _remoteEndPoint;
 
         #endregion
@@ -44,7 +39,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to receive bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 4 * 1024; //4KB
+        private const int _receiveBufferSize = 4 * 1024; //4KB
 
         /// <summary>
         /// This buffer is used to receive bytes 
@@ -88,7 +83,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
             var ipEndPoint = (IPEndPoint)_clientSocket.RemoteEndPoint;
             _remoteEndPoint = new ScsTcpEndPoint(ipEndPoint.Address.ToString(), ipEndPoint.Port);
 
-            _buffer = new byte[ReceiveBufferSize];
+            _buffer = new byte[_receiveBufferSize];
             _syncLock = new object();
         }
 
@@ -127,7 +122,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
             }
             catch
             {
-
+                // ignored
             }
 
             CommunicationState = CommunicationStates.Disconnected;
@@ -144,7 +139,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         protected override void StartInternal()
         {
             _running = true;
-            IAsyncResult res = _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, ReceiveCallback, null);
+            _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, ReceiveCallback, null);
 
 #if UTILIZA_DESCONEXION_AUTOMATICA
             //  if (res.IsCompleted)

@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
 using Hik.Communication.Scs.Communication.EndPoints.Tcp;
-using ProxyConfig;
 
 namespace Hik.Communication.Scs.Client.Tcp
 {
@@ -21,10 +19,8 @@ namespace Hik.Communication.Scs.Client.Tcp
                 return ConnectViaHttpProxy(endPoint.IpAddress, endPoint.TcpPort, pc.ProxyAddress, pc.ProxyPort,
                     pc.ProxyUserName, pc.ProxyPassword);
             }
-            else
-            {
-                return ConnectToServerNoProxy(new IPEndPoint(IPAddress.Parse(endPoint.IpAddress), endPoint.TcpPort), timeoutMs);
-            }
+
+            return ConnectToServerNoProxy(new IPEndPoint(IPAddress.Parse(endPoint.IpAddress), endPoint.TcpPort), timeoutMs);
         }
 
         /// <summary>

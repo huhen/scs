@@ -44,29 +44,17 @@ namespace Hik.Communication.Scs.Communication.Messengers
         /// <summary>
         /// Gets the time of the last succesfully received message.
         /// </summary>
-        public DateTime LastReceivedMessageTime
-        {
-            get
-            {
-                return Messenger.LastReceivedMessageTime;
-            }
-        }
+        public DateTime LastReceivedMessageTime => Messenger.LastReceivedMessageTime;
 
         /// <summary>
         /// Gets the time of the last succesfully received message.
         /// </summary>
-        public DateTime LastSentMessageTime
-        {
-            get
-            {
-                return Messenger.LastSentMessageTime;
-            }
-        }
+        public DateTime LastSentMessageTime => Messenger.LastSentMessageTime;
 
         /// <summary>
         /// Gets the underlying IMessenger object.
         /// </summary>
-        public T Messenger { get; private set; }
+        public T Messenger { get; }
 
         /// <summary>
         /// Timeout value as milliseconds to wait for a receiving message on 
@@ -82,7 +70,7 @@ namespace Hik.Communication.Scs.Communication.Messengers
         /// <summary>
         /// Default Timeout value.
         /// </summary>
-        private const int DefaultTimeout = 60000;
+        private const int _defaultTimeout = 60000;
 
         /// <summary>
         /// This messages are waiting for a response those are used when 
@@ -117,7 +105,7 @@ namespace Hik.Communication.Scs.Communication.Messengers
             messenger.MessageSent += Messenger_MessageSent;
             _incomingMessageProcessor = new SequentialItemProcessor<IScsMessage>(OnMessageReceived);
             _waitingMessages = new SortedList<string, WaitingMessage>();
-            Timeout = DefaultTimeout;
+            Timeout = _defaultTimeout;
         }
 
         #endregion
@@ -338,7 +326,7 @@ namespace Hik.Communication.Scs.Communication.Messengers
             /// <summary>
             /// ManualResetEvent to block thread until response is received.
             /// </summary>
-            public ManualResetEventSlim WaitEvent { get; private set; }
+            public ManualResetEventSlim WaitEvent { get; }
 
             /// <summary>
             /// State of the request message.
