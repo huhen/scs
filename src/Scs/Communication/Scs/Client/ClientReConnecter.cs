@@ -5,40 +5,30 @@ using Hik.Threading;
 namespace Hik.Communication.Scs.Client
 {
     /// <summary>
-    /// This class is used to automatically re-connect to server if disconnected.
-    /// It attempts to reconnect to server periodically until connection established.
+    ///     This class is used to automatically re-connect to server if disconnected.
+    ///     It attempts to reconnect to server periodically until connection established.
     /// </summary>
     public class ClientReConnecter : IDisposable
     {
         /// <summary>
-        /// Reconnect check period.
-        /// Default: 20 seconds.
-        /// </summary>
-        public int ReConnectCheckPeriod
-        {
-            get { return _reconnectTimer.Period; }
-            set { _reconnectTimer.Period = value; }
-        }
-
-        /// <summary>
-        /// Reference to client object.
+        ///     Reference to client object.
         /// </summary>
         private readonly IConnectableClient _client;
 
         /// <summary>
-        /// Timer to  attempt ro reconnect periodically.
+        ///     Timer to  attempt ro reconnect periodically.
         /// </summary>
         private readonly Timer _reconnectTimer;
 
         /// <summary>
-        /// Indicates the dispose state of this object.
+        ///     Indicates the dispose state of this object.
         /// </summary>
         private volatile bool _disposed;
 
         /// <summary>
-        /// Creates a new ClientReConnecter object.
-        /// It is not needed to start ClientReConnecter since it automatically
-        /// starts when the client disconnected.
+        ///     Creates a new ClientReConnecter object.
+        ///     It is not needed to start ClientReConnecter since it automatically
+        ///     starts when the client disconnected.
         /// </summary>
         /// <param name="client">Reference to client object</param>
         /// <exception cref="ArgumentNullException">Throws ArgumentNullException if client is null.</exception>
@@ -57,8 +47,18 @@ namespace Hik.Communication.Scs.Client
         }
 
         /// <summary>
-        /// Disposes this object.
-        /// Does nothing if already disposed.
+        ///     Reconnect check period.
+        ///     Default: 20 seconds.
+        /// </summary>
+        public int ReConnectCheckPeriod
+        {
+            get { return _reconnectTimer.Period; }
+            set { _reconnectTimer.Period = value; }
+        }
+
+        /// <summary>
+        ///     Disposes this object.
+        ///     Does nothing if already disposed.
         /// </summary>
         public void Dispose()
         {
@@ -73,7 +73,7 @@ namespace Hik.Communication.Scs.Client
         }
 
         /// <summary>
-        /// Handles Disconnected event of _client object.
+        ///     Handles Disconnected event of _client object.
         /// </summary>
         /// <param name="sender">Source of the event</param>
         /// <param name="e">Event arguments</param>
@@ -83,7 +83,7 @@ namespace Hik.Communication.Scs.Client
         }
 
         /// <summary>
-        /// Hadles Elapsed event of _reconnectTimer.
+        ///     Hadles Elapsed event of _reconnectTimer.
         /// </summary>
         /// <param name="sender">Source of the event</param>
         /// <param name="e">Event arguments</param>

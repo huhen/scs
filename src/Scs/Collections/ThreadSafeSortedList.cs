@@ -4,15 +4,34 @@ using System.Threading;
 namespace Hik.Collections
 {
     /// <summary>
-    /// This class is used to store key-value based items in a thread safe manner.
-    /// It uses System.Collections.Generic.SortedList internally.
+    ///     This class is used to store key-value based items in a thread safe manner.
+    ///     It uses System.Collections.Generic.SortedList internally.
     /// </summary>
     /// <typeparam name="TK">Key type</typeparam>
     /// <typeparam name="TV">Value type</typeparam>
     public class ThreadSafeSortedList<TK, TV>
     {
         /// <summary>
-        /// Gets/adds/replaces an item by key.
+        ///     Internal collection to store items.
+        /// </summary>
+        protected readonly SortedList<TK, TV> Items;
+
+        /// <summary>
+        ///     Used to synchronize access to _items list.
+        /// </summary>
+        protected readonly ReaderWriterLockSlim LockSlim;
+
+        /// <summary>
+        ///     Creates a new ThreadSafeSortedList object.
+        /// </summary>
+        public ThreadSafeSortedList()
+        {
+            Items = new SortedList<TK, TV>();
+            LockSlim = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+        }
+
+        /// <summary>
+        ///     Gets/adds/replaces an item by key.
         /// </summary>
         /// <param name="key">Key to get/set value</param>
         /// <returns>Item associated with this key</returns>
@@ -46,7 +65,7 @@ namespace Hik.Collections
         }
 
         /// <summary>
-        /// Gets count of items in the collection.
+        ///     Gets count of items in the collection.
         /// </summary>
         public int Count
         {
@@ -65,26 +84,7 @@ namespace Hik.Collections
         }
 
         /// <summary>
-        /// Internal collection to store items.
-        /// </summary>
-        protected readonly SortedList<TK, TV> Items;
-
-        /// <summary>
-        /// Used to synchronize access to _items list.
-        /// </summary>
-        protected readonly ReaderWriterLockSlim LockSlim;
-
-        /// <summary>
-        /// Creates a new ThreadSafeSortedList object.
-        /// </summary>
-        public ThreadSafeSortedList()
-        {
-            Items = new SortedList<TK, TV>();
-            LockSlim = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
-        }
-
-        /// <summary>
-        /// Checks if collection contains spesified key.
+        ///     Checks if collection contains spesified key.
         /// </summary>
         /// <param name="key">Key to check</param>
         /// <returns>True; if collection contains given key</returns>
@@ -102,7 +102,7 @@ namespace Hik.Collections
         }
 
         /// <summary>
-        /// Checks if collection contains spesified item.
+        ///     Checks if collection contains spesified item.
         /// </summary>
         /// <param name="item">Item to check</param>
         /// <returns>True; if collection contains given item</returns>
@@ -120,7 +120,7 @@ namespace Hik.Collections
         }
 
         /// <summary>
-        /// Removes an item from collection.
+        ///     Removes an item from collection.
         /// </summary>
         /// <param name="key">Key of item to remove</param>
         public bool Remove(TK key)
@@ -143,7 +143,7 @@ namespace Hik.Collections
         }
 
         /// <summary>
-        /// Gets all items in collection.
+        ///     Gets all items in collection.
         /// </summary>
         /// <returns>Item list</returns>
         public List<TV> GetAllItems()
@@ -160,7 +160,7 @@ namespace Hik.Collections
         }
 
         /// <summary>
-        /// Removes all items from list.
+        ///     Removes all items from list.
         /// </summary>
         public void ClearAll()
         {
@@ -176,7 +176,7 @@ namespace Hik.Collections
         }
 
         /// <summary>
-        /// Gets then removes all items in collection.
+        ///     Gets then removes all items in collection.
         /// </summary>
         /// <returns>Item list</returns>
         public List<TV> GetAndClearAllItems()

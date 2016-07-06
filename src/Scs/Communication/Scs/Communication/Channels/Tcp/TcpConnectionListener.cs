@@ -1,37 +1,38 @@
-﻿using System.Net.Sockets;
+﻿using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using Hik.Communication.Scs.Communication.EndPoints.Tcp;
 
 namespace Hik.Communication.Scs.Communication.Channels.Tcp
 {
     /// <summary>
-    /// This class is used to listen and accept incoming TCP
-    /// connection requests on a TCP port.
+    ///     This class is used to listen and accept incoming TCP
+    ///     connection requests on a TCP port.
     /// </summary>
     internal class TcpConnectionListener : ConnectionListenerBase
     {
         /// <summary>
-        /// The endpoint address of the server to listen incoming connections.
+        ///     The endpoint address of the server to listen incoming connections.
         /// </summary>
         private readonly ScsTcpEndPoint _endPoint;
 
         /// <summary>
-        /// Server socket to listen incoming connection requests.
+        ///     Server socket to listen incoming connection requests.
         /// </summary>
         private TcpListener _listenerSocket;
 
         /// <summary>
-        /// The thread to listen socket
-        /// </summary>
-        private Thread _thread;
-
-        /// <summary>
-        /// A flag to control thread's running
+        ///     A flag to control thread's running
         /// </summary>
         private volatile bool _running;
 
         /// <summary>
-        /// Creates a new TcpConnectionListener for given endpoint.
+        ///     The thread to listen socket
+        /// </summary>
+        private Thread _thread;
+
+        /// <summary>
+        ///     Creates a new TcpConnectionListener for given endpoint.
         /// </summary>
         /// <param name="endPoint">The endpoint address of the server to listen incoming connections</param>
         public TcpConnectionListener(ScsTcpEndPoint endPoint)
@@ -40,7 +41,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         }
 
         /// <summary>
-        /// Starts listening incoming connections.
+        ///     Starts listening incoming connections.
         /// </summary>
         public override void Start()
         {
@@ -51,7 +52,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         }
 
         /// <summary>
-        /// Stops listening incoming connections.
+        ///     Stops listening incoming connections.
         /// </summary>
         public override void Stop()
         {
@@ -60,16 +61,16 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         }
 
         /// <summary>
-        /// Starts listening socket.
+        ///     Starts listening socket.
         /// </summary>
         private void StartSocket()
         {
-            _listenerSocket = new TcpListener(System.Net.IPAddress.Any, _endPoint.TcpPort);
+            _listenerSocket = new TcpListener(IPAddress.Any, _endPoint.TcpPort);
             _listenerSocket.Start();
         }
 
         /// <summary>
-        /// Stops listening socket.
+        ///     Stops listening socket.
         /// </summary>
         private void StopSocket()
         {
@@ -84,8 +85,8 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         }
 
         /// <summary>
-        /// Entrance point of the thread.
-        /// This method is used by the thread to listen incoming requests.
+        ///     Entrance point of the thread.
+        ///     This method is used by the thread to listen incoming requests.
         /// </summary>
         private void DoListenAsThread()
         {

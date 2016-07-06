@@ -7,63 +7,83 @@ using System.Xml.Serialization;
 namespace ProxyConfig
 {
     /// <summary>
-    /// ProxyConfig
+    ///     ProxyConfig
     /// </summary>
     [Serializable]
     public class ProxyConfig
     {
-        /// <summary>
-        /// ProxyType
-        /// </summary>
-        public string ProxyType;
-        /// <summary>
-        /// ProxyAddress
-        /// </summary>
-        public string ProxyAddress;
-        /// <summary>
-        /// ProxyPort
-        /// </summary>
-        public ushort ProxyPort;
-        /// <summary>
-        /// ProxyUserName
-        /// </summary>
-        public string ProxyUserName;
-        /// <summary>
-        /// ProxyPassword
-        /// </summary>
-        public string ProxyPassword;
-        /// <summary>
-        /// ProxyEnable
-        /// </summary>
-        public bool ProxyEnable;
-        /// <summary>
-        /// ProxyPasswordEncrypted
-        /// </summary>
-        public bool ProxyPasswordEncrypted;
-
         private const string _proxyConfigName = "proxy.xml";
         private const byte _xorConst = 0xAD;
 
         /// <summary>
-        /// Load Config
+        ///     ProxyAddress
+        /// </summary>
+        public string ProxyAddress;
+
+        /// <summary>
+        ///     ProxyEnable
+        /// </summary>
+        public bool ProxyEnable;
+
+        /// <summary>
+        ///     ProxyPassword
+        /// </summary>
+        public string ProxyPassword;
+
+        /// <summary>
+        ///     ProxyPasswordEncrypted
+        /// </summary>
+        public bool ProxyPasswordEncrypted;
+
+        /// <summary>
+        ///     ProxyPort
+        /// </summary>
+        public ushort ProxyPort;
+
+        /// <summary>
+        ///     ProxyType
+        /// </summary>
+        public string ProxyType;
+
+        /// <summary>
+        ///     ProxyUserName
+        /// </summary>
+        public string ProxyUserName;
+
+        /// <summary>
+        ///     Load Config
         /// </summary>
         /// <returns></returns>
         public static ProxyConfig GetConfig()
         {
-            var config = new ProxyConfig() { ProxyType = string.Empty, ProxyAddress = string.Empty, ProxyPort = 0, ProxyUserName = string.Empty, ProxyPassword = string.Empty, ProxyEnable = false, ProxyPasswordEncrypted = false };
+            var config = new ProxyConfig
+            {
+                ProxyType = string.Empty,
+                ProxyAddress = string.Empty,
+                ProxyPort = 0,
+                ProxyUserName = string.Empty,
+                ProxyPassword = string.Empty,
+                ProxyEnable = false,
+                ProxyPasswordEncrypted = false
+            };
             try
             {
-                var proxyConfigPath = Path.Combine(Path.GetDirectoryName(new Uri(Assembly.GetEntryAssembly().EscapedCodeBase).LocalPath) ?? string.Empty, _proxyConfigName);
+                var proxyConfigPath =
+                    Path.Combine(
+                        Path.GetDirectoryName(new Uri(Assembly.GetEntryAssembly().EscapedCodeBase).LocalPath) ??
+                        string.Empty, _proxyConfigName);
                 if (!File.Exists(proxyConfigPath)) return config;
-                var serializer = new XmlSerializer(typeof(ProxyConfig));
+                var serializer = new XmlSerializer(typeof (ProxyConfig));
                 using (var reader = new StreamReader(proxyConfigPath))
                 {
-                    config = (ProxyConfig)serializer.Deserialize(reader);
+                    config = (ProxyConfig) serializer.Deserialize(reader);
                     reader.Close();
                 }
             }
-            // ReSharper disable once EmptyGeneralCatchClause
-            catch { }
+                // ReSharper disable once EmptyGeneralCatchClause
+            catch
+            {
+            }
 
             if (config.ProxyPasswordEncrypted)
             {
@@ -108,7 +128,7 @@ namespace ProxyConfig
         }
 
         /// <summary>
-        /// Save config
+        ///     Save config
         /// </summary>
         /// <param name="proxyConfig"></param>
         /// <returns></returns>
@@ -117,8 +137,11 @@ namespace ProxyConfig
             if (proxyConfig == null) return false;
             try
             {
-                var proxyConfigPath = Path.Combine(Path.GetDirectoryName(new Uri(Assembly.GetEntryAssembly().EscapedCodeBase).LocalPath) ?? string.Empty, _proxyConfigName);
-                var serializer = new XmlSerializer(typeof(ProxyConfig));
+                var proxyConfigPath =
+                    Path.Combine(
+                        Path.GetDirectoryName(new Uri(Assembly.GetEntryAssembly().EscapedCodeBase).LocalPath) ??
+                        string.Empty, _proxyConfigName);
+                var serializer = new XmlSerializer(typeof (ProxyConfig));
                 using (var writer = new StreamWriter(proxyConfigPath))
                 {
                     proxyConfig.ProxyPasswordEncrypted = true;
@@ -133,7 +156,10 @@ namespace ProxyConfig
                 }
                 return true;
             }
-            catch { return false; }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

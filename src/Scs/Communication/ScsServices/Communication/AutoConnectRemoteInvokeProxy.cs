@@ -6,20 +6,21 @@ using Hik.Communication.Scs.Communication.Messengers;
 namespace Hik.Communication.ScsServices.Communication
 {
     /// <summary>
-    /// This class extends RemoteInvokeProxy to provide auto connect/disconnect mechanism
-    /// if client is not connected to the server when a service method is called.
+    ///     This class extends RemoteInvokeProxy to provide auto connect/disconnect mechanism
+    ///     if client is not connected to the server when a service method is called.
     /// </summary>
     /// <typeparam name="TProxy">Type of the proxy class/interface</typeparam>
     /// <typeparam name="TMessenger">Type of the messenger object that is used to send/receive messages</typeparam>
-    internal class AutoConnectRemoteInvokeProxy<TProxy, TMessenger> : RemoteInvokeProxy<TProxy, TMessenger> where TMessenger : IMessenger
+    internal class AutoConnectRemoteInvokeProxy<TProxy, TMessenger> : RemoteInvokeProxy<TProxy, TMessenger>
+        where TMessenger : IMessenger
     {
         /// <summary>
-        /// Reference to the client object that is used to connect/disconnect.
+        ///     Reference to the client object that is used to connect/disconnect.
         /// </summary>
         private readonly IConnectableClient _client;
 
         /// <summary>
-        /// Creates a new AutoConnectRemoteInvokeProxy object.
+        ///     Creates a new AutoConnectRemoteInvokeProxy object.
         /// </summary>
         /// <param name="clientMessenger">Messenger object that is used to send/receive messages</param>
         /// <param name="client">Reference to the client object that is used to connect/disconnect</param>
@@ -30,7 +31,7 @@ namespace Hik.Communication.ScsServices.Communication
         }
 
         /// <summary>
-        /// Overrides message calls and translates them to messages to remote application.
+        ///     Overrides message calls and translates them to messages to remote application.
         /// </summary>
         /// <param name="msg">Method invoke message (from RealProxy base class)</param>
         /// <returns>Method invoke return message (to RealProxy base class)</returns>

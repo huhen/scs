@@ -6,68 +6,14 @@ using Hik.Communication.Scs.Communication.Protocols;
 namespace Hik.Communication.Scs.Communication.Channels
 {
     /// <summary>
-    /// This class provides base functionality for all communication channel classes.
+    ///     This class provides base functionality for all communication channel classes.
     /// </summary>
     internal abstract class CommunicationChannelBase : ICommunicationChannel
     {
-        #region Public events
-
-        /// <summary>
-        /// This event is raised when a new message is received.
-        /// </summary>
-        public event EventHandler<MessageEventArgs> MessageReceived;
-
-        /// <summary>
-        /// This event is raised when a new message is sent without any error.
-        /// It does not guaranties that message is properly handled and processed by remote application.
-        /// </summary>
-        public event EventHandler<MessageEventArgs> MessageSent;
-
-        /// <summary>
-        /// This event is raised when communication channel closed.
-        /// </summary>
-        public event EventHandler Disconnected;
-
-        #endregion
-
-        #region Public abstract properties
-
-        ///<summary>
-        /// Gets endpoint of remote application.
-        ///</summary>
-        public abstract ScsEndPoint RemoteEndPoint { get; }
-
-        #endregion
-
-        #region Public properties
-
-        /// <summary>
-        /// Gets the current communication state.
-        /// </summary>
-        public CommunicationStates CommunicationState { get; protected set; }
-
-        /// <summary>
-        /// Gets the time of the last succesfully received message.
-        /// </summary>
-        public DateTime LastReceivedMessageTime { get; protected set; }
-
-        /// <summary>
-        /// Gets the time of the last succesfully sent message.
-        /// </summary>
-        public DateTime LastSentMessageTime { get; protected set; }
-
-        /// <summary>
-        /// Gets/sets wire protocol that the channel uses.
-        /// This property must set before first communication.
-        /// </summary>
-        public IScsWireProtocol WireProtocol { get; set; }
-
-        #endregion
-
         #region Constructor
 
         /// <summary>
-        /// Constructor.
+        ///     Constructor.
         /// </summary>
         protected CommunicationChannelBase()
         {
@@ -78,19 +24,73 @@ namespace Hik.Communication.Scs.Communication.Channels
 
         #endregion
 
+        #region Public abstract properties
+
+        /// <summary>
+        ///     Gets endpoint of remote application.
+        /// </summary>
+        public abstract ScsEndPoint RemoteEndPoint { get; }
+
+        #endregion
+
         #region Public abstract methods
 
         /// <summary>
-        /// Disconnects from remote application and closes this channel.
+        ///     Disconnects from remote application and closes this channel.
         /// </summary>
         public abstract void Disconnect();
+
+        #endregion
+
+        #region Public events
+
+        /// <summary>
+        ///     This event is raised when a new message is received.
+        /// </summary>
+        public event EventHandler<MessageEventArgs> MessageReceived;
+
+        /// <summary>
+        ///     This event is raised when a new message is sent without any error.
+        ///     It does not guaranties that message is properly handled and processed by remote application.
+        /// </summary>
+        public event EventHandler<MessageEventArgs> MessageSent;
+
+        /// <summary>
+        ///     This event is raised when communication channel closed.
+        /// </summary>
+        public event EventHandler Disconnected;
+
+        #endregion
+
+        #region Public properties
+
+        /// <summary>
+        ///     Gets the current communication state.
+        /// </summary>
+        public CommunicationStates CommunicationState { get; protected set; }
+
+        /// <summary>
+        ///     Gets the time of the last succesfully received message.
+        /// </summary>
+        public DateTime LastReceivedMessageTime { get; protected set; }
+
+        /// <summary>
+        ///     Gets the time of the last succesfully sent message.
+        /// </summary>
+        public DateTime LastSentMessageTime { get; protected set; }
+
+        /// <summary>
+        ///     Gets/sets wire protocol that the channel uses.
+        ///     This property must set before first communication.
+        /// </summary>
+        public IScsWireProtocol WireProtocol { get; set; }
 
         #endregion
 
         #region Public methods
 
         /// <summary>
-        /// Starts the communication with remote application.
+        ///     Starts the communication with remote application.
         /// </summary>
         public void Start()
         {
@@ -99,7 +99,7 @@ namespace Hik.Communication.Scs.Communication.Channels
         }
 
         /// <summary>
-        /// Sends a message to the remote application.
+        ///     Sends a message to the remote application.
         /// </summary>
         /// <param name="message">Message to be sent</param>
         /// <exception cref="ArgumentNullException">Throws ArgumentNullException if message is null</exception>
@@ -118,13 +118,13 @@ namespace Hik.Communication.Scs.Communication.Channels
         #region Protected abstract methods
 
         /// <summary>
-        /// Starts the communication with remote application really.
+        ///     Starts the communication with remote application really.
         /// </summary>
         protected abstract void StartInternal();
 
         /// <summary>
-        /// Sends a message to the remote application.
-        /// This method is overrided by derived classes to really send to message.
+        ///     Sends a message to the remote application.
+        ///     This method is overrided by derived classes to really send to message.
         /// </summary>
         /// <param name="message">Message to be sent</param>
         protected abstract void SendMessageInternal(IScsMessage message);
@@ -134,7 +134,7 @@ namespace Hik.Communication.Scs.Communication.Channels
         #region Event raising methods
 
         /// <summary>
-        /// Raises Disconnected event.
+        ///     Raises Disconnected event.
         /// </summary>
         protected virtual void OnDisconnected()
         {
@@ -143,7 +143,7 @@ namespace Hik.Communication.Scs.Communication.Channels
         }
 
         /// <summary>
-        /// Raises MessageReceived event.
+        ///     Raises MessageReceived event.
         /// </summary>
         /// <param name="message">Received message</param>
         protected virtual void OnMessageReceived(IScsMessage message)
@@ -153,7 +153,7 @@ namespace Hik.Communication.Scs.Communication.Channels
         }
 
         /// <summary>
-        /// Raises MessageSent event.
+        ///     Raises MessageSent event.
         /// </summary>
         /// <param name="message">Received message</param>
         protected virtual void OnMessageSent(IScsMessage message)

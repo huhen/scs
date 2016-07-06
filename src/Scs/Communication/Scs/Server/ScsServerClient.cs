@@ -1,100 +1,21 @@
 ﻿using System;
 using Hik.Communication.Scs.Communication;
+using Hik.Communication.Scs.Communication.Channels;
 using Hik.Communication.Scs.Communication.EndPoints;
 using Hik.Communication.Scs.Communication.Messages;
-using Hik.Communication.Scs.Communication.Channels;
 using Hik.Communication.Scs.Communication.Protocols;
 
 namespace Hik.Communication.Scs.Server
 {
     /// <summary>
-    /// This class represents a client in server side.
+    ///     This class represents a client in server side.
     /// </summary>
     internal class ScsServerClient : IScsServerClient
     {
-        #region Public events
-
-        /// <summary>
-        /// This event is raised when a new message is received.
-        /// </summary>
-        public event EventHandler<MessageEventArgs> MessageReceived;
-
-        /// <summary>
-        /// This event is raised when a new message is sent without any error.
-        /// It does not guaranties that message is properly handled and processed by remote application.
-        /// </summary>
-        public event EventHandler<MessageEventArgs> MessageSent;
-
-        /// <summary>
-        /// This event is raised when client is disconnected from server.
-        /// </summary>
-        public event EventHandler Disconnected;
-
-        #endregion
-
-        #region Public properties
-
-        /// <summary>
-        /// Unique identifier for this client in server.
-        /// </summary>
-        public string ClientId { get; set; }
-
-        /// <summary>
-        /// Gets the communication state of the Client.
-        /// </summary>
-        public CommunicationStates CommunicationState
-        {
-            get
-            {
-                return _communicationChannel.CommunicationState;
-            }
-        }
-        
-        /// <summary>
-        /// Gets/sets wire protocol that is used while reading and writing messages.
-        /// </summary>
-        public IScsWireProtocol WireProtocol
-        {
-            get { return _communicationChannel.WireProtocol; }
-            set { _communicationChannel.WireProtocol = value; }
-        }
-
-        ///<summary>
-        /// Gets endpoint of remote application.
-        ///</summary>
-        public ScsEndPoint RemoteEndPoint
-        {
-            get { return _communicationChannel.RemoteEndPoint; }
-        }
-
-        /// <summary>
-        /// Gets the time of the last succesfully received message.
-        /// </summary>
-        public DateTime LastReceivedMessageTime
-        {
-            get
-            {
-                return _communicationChannel.LastReceivedMessageTime;
-            }
-        }
-
-        /// <summary>
-        /// Gets the time of the last succesfully received message.
-        /// </summary>
-        public DateTime LastSentMessageTime
-        {
-            get
-            {
-                return _communicationChannel.LastSentMessageTime;
-            }
-        }
-
-        #endregion
-
         #region Private fields
 
         /// <summary>
-        /// The communication channel that is used by client to send and receive messages.
+        ///     The communication channel that is used by client to send and receive messages.
         /// </summary>
         private readonly ICommunicationChannel _communicationChannel;
 
@@ -103,7 +24,7 @@ namespace Hik.Communication.Scs.Server
         #region Constructor
 
         /// <summary>
-        /// Creates a new ScsClient object.
+        ///     Creates a new ScsClient object.
         /// </summary>
         /// <param name="communicationChannel">The communication channel that is used by client to send and receive messages</param>
         public ScsServerClient(ICommunicationChannel communicationChannel)
@@ -116,10 +37,68 @@ namespace Hik.Communication.Scs.Server
 
         #endregion
 
+        #region Public events
+
+        /// <summary>
+        ///     This event is raised when a new message is received.
+        /// </summary>
+        public event EventHandler<MessageEventArgs> MessageReceived;
+
+        /// <summary>
+        ///     This event is raised when a new message is sent without any error.
+        ///     It does not guaranties that message is properly handled and processed by remote application.
+        /// </summary>
+        public event EventHandler<MessageEventArgs> MessageSent;
+
+        /// <summary>
+        ///     This event is raised when client is disconnected from server.
+        /// </summary>
+        public event EventHandler Disconnected;
+
+        #endregion
+
+        #region Public properties
+
+        /// <summary>
+        ///     Unique identifier for this client in server.
+        /// </summary>
+        public string ClientId { get; set; }
+
+        /// <summary>
+        ///     Gets the communication state of the Client.
+        /// </summary>
+        public CommunicationStates CommunicationState => _communicationChannel.CommunicationState;
+
+        /// <summary>
+        ///     Gets/sets wire protocol that is used while reading and writing messages.
+        /// </summary>
+        public IScsWireProtocol WireProtocol
+        {
+            get { return _communicationChannel.WireProtocol; }
+            set { _communicationChannel.WireProtocol = value; }
+        }
+
+        /// <summary>
+        ///     Gets endpoint of remote application.
+        /// </summary>
+        public ScsEndPoint RemoteEndPoint => _communicationChannel.RemoteEndPoint;
+
+        /// <summary>
+        ///     Gets the time of the last succesfully received message.
+        /// </summary>
+        public DateTime LastReceivedMessageTime => _communicationChannel.LastReceivedMessageTime;
+
+        /// <summary>
+        ///     Gets the time of the last succesfully received message.
+        /// </summary>
+        public DateTime LastSentMessageTime => _communicationChannel.LastSentMessageTime;
+
+        #endregion
+
         #region Public methods
 
         /// <summary>
-        /// Disconnects from client and closes underlying communication channel.
+        ///     Disconnects from client and closes underlying communication channel.
         /// </summary>
         public void Disconnect()
         {
@@ -127,7 +106,7 @@ namespace Hik.Communication.Scs.Server
         }
 
         /// <summary>
-        /// Sends a message to the client.
+        ///     Sends a message to the client.
         /// </summary>
         /// <param name="message">Message to be sent</param>
         public void SendMessage(IScsMessage message)
@@ -138,9 +117,9 @@ namespace Hik.Communication.Scs.Server
         #endregion
 
         #region Private methods
-        
+
         /// <summary>
-        /// Handles Disconnected event of _communicationChannel object.
+        ///     Handles Disconnected event of _communicationChannel object.
         /// </summary>
         /// <param name="sender">Source of event</param>
         /// <param name="e">Event arguments</param>
@@ -150,7 +129,7 @@ namespace Hik.Communication.Scs.Server
         }
 
         /// <summary>
-        /// Handles MessageReceived event of _communicationChannel object.
+        ///     Handles MessageReceived event of _communicationChannel object.
         /// </summary>
         /// <param name="sender">Source of event</param>
         /// <param name="e">Event arguments</param>
@@ -159,7 +138,7 @@ namespace Hik.Communication.Scs.Server
             var message = e.Message;
             if (message is ScsPingMessage)
             {
-                _communicationChannel.SendMessage(new ScsPingMessage { RepliedMessageId = message.MessageId });
+                _communicationChannel.SendMessage(new ScsPingMessage {RepliedMessageId = message.MessageId});
                 return;
             }
 
@@ -167,7 +146,7 @@ namespace Hik.Communication.Scs.Server
         }
 
         /// <summary>
-        /// Handles MessageSent event of _communicationChannel object.
+        ///     Handles MessageSent event of _communicationChannel object.
         /// </summary>
         /// <param name="sender">Source of event</param>
         /// <param name="e">Event arguments</param>
@@ -181,7 +160,7 @@ namespace Hik.Communication.Scs.Server
         #region Event raising methods
 
         /// <summary>
-        /// Raises Disconnected event.
+        ///     Raises Disconnected event.
         /// </summary>
         private void OnDisconnected()
         {
@@ -190,7 +169,7 @@ namespace Hik.Communication.Scs.Server
         }
 
         /// <summary>
-        /// Raises MessageReceived event.
+        ///     Raises MessageReceived event.
         /// </summary>
         /// <param name="message">Received message</param>
         private void OnMessageReceived(IScsMessage message)
@@ -200,7 +179,7 @@ namespace Hik.Communication.Scs.Server
         }
 
         /// <summary>
-        /// Raises MessageSent event.
+        ///     Raises MessageSent event.
         /// </summary>
         /// <param name="message">Received message</param>
         protected virtual void OnMessageSent(IScsMessage message)

@@ -3,7 +3,7 @@
 namespace Hik.Communication.Scs.Client
 {
     /// <summary>
-    /// Represents a client to connect to server.
+    ///     Represents a client to connect to server.
     /// </summary>
     public interface IScsClient : IMessenger, IConnectableClient
     {

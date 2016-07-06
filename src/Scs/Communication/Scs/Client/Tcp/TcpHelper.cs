@@ -7,7 +7,7 @@ using Hik.Communication.Scs.Communication.EndPoints.Tcp;
 namespace Hik.Communication.Scs.Client.Tcp
 {
     /// <summary>
-    /// This class is used to simplify TCP socket operations.
+    ///     This class is used to simplify TCP socket operations.
     /// </summary>
     internal static class TcpHelper
     {
@@ -20,11 +20,12 @@ namespace Hik.Communication.Scs.Client.Tcp
                     pc.ProxyUserName, pc.ProxyPassword);
             }
 
-            return ConnectToServerNoProxy(new IPEndPoint(IPAddress.Parse(endPoint.IpAddress), endPoint.TcpPort), timeoutMs);
+            return ConnectToServerNoProxy(new IPEndPoint(IPAddress.Parse(endPoint.IpAddress), endPoint.TcpPort),
+                timeoutMs);
         }
 
         /// <summary>
-        /// This code is used to connect to a TCP socket with timeout option.
+        ///     This code is used to connect to a TCP socket with timeout option.
         /// </summary>
         /// <param name="endPoint">IP endpoint of remote server</param>
         /// <param name="timeoutMs">Timeout to wait until connect</param>
@@ -49,7 +50,7 @@ namespace Hik.Communication.Scs.Client.Tcp
                     throw;
                 }
 
-                if (!socket.Poll(timeoutMs * 1000, SelectMode.SelectWrite))
+                if (!socket.Poll(timeoutMs*1000, SelectMode.SelectWrite))
                 {
                     socket.Close();
                     throw new TimeoutException("The host failed to connect. Timeout occured.");
@@ -60,7 +61,8 @@ namespace Hik.Communication.Scs.Client.Tcp
             }
         }
 
-        public static Socket ConnectViaHttpProxy(string targetHost, int targetPort, string httpProxyHost, int httpProxyPort, string proxyUserName, string proxyPassword)
+        public static Socket ConnectViaHttpProxy(string targetHost, int targetPort, string httpProxyHost,
+            int httpProxyPort, string proxyUserName, string proxyPassword)
         {
             const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
 
@@ -94,7 +96,7 @@ namespace Hik.Communication.Scs.Client.Tcp
             var networkStream = networkStreamProperty.GetValue(connection, null);
             var nsType = networkStream.GetType();
             var socketProperty = nsType.GetProperty("Socket", flags);
-            return (Socket)socketProperty.GetValue(networkStream, null);
+            return (Socket) socketProperty.GetValue(networkStream, null);
         }
     }
 }

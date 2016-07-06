@@ -6,30 +6,30 @@ using Hik.Communication.ScsServices.Communication.Messages;
 namespace Hik.Communication.ScsServices.Communication
 {
     /// <summary>
-    /// This class is used to generate a dynamic proxy to invoke remote methods.
-    /// It translates method invocations to messaging.
+    ///     This class is used to generate a dynamic proxy to invoke remote methods.
+    ///     It translates method invocations to messaging.
     /// </summary>
     /// <typeparam name="TProxy">Type of the proxy class/interface</typeparam>
     /// <typeparam name="TMessenger">Type of the messenger object that is used to send/receive messages</typeparam>
     internal class RemoteInvokeProxy<TProxy, TMessenger> : RealProxy where TMessenger : IMessenger
     {
         /// <summary>
-        /// Messenger object that is used to send/receive messages.
+        ///     Messenger object that is used to send/receive messages.
         /// </summary>
         private readonly RequestReplyMessenger<TMessenger> _clientMessenger;
 
         /// <summary>
-        /// Creates a new RemoteInvokeProxy object.
+        ///     Creates a new RemoteInvokeProxy object.
         /// </summary>
         /// <param name="clientMessenger">Messenger object that is used to send/receive messages</param>
         public RemoteInvokeProxy(RequestReplyMessenger<TMessenger> clientMessenger)
-            : base(typeof(TProxy))
+            : base(typeof (TProxy))
         {
             _clientMessenger = clientMessenger;
         }
 
         /// <summary>
-        /// Overrides message calls and translates them to messages to remote application.
+        ///     Overrides message calls and translates them to messages to remote application.
         /// </summary>
         /// <param name="msg">Method invoke message (from RealProxy base class)</param>
         /// <returns>Method invoke return message (to RealProxy base class)</returns>
@@ -43,13 +43,14 @@ namespace Hik.Communication.ScsServices.Communication
 
             var requestMessage = new ScsRemoteInvokeMessage
             {
-                ServiceClassName = typeof(TProxy).Name,
+                ServiceClassName = typeof (TProxy).Name,
                 MethodName = message.MethodName,
                 //Parameters = message.InArgs
                 Parameters = message.Args
             };
 
-            var responseMessage = _clientMessenger.SendMessageAndWaitForResponse(requestMessage) as ScsRemoteInvokeReturnMessage;
+            var responseMessage =
+                _clientMessenger.SendMessageAndWaitForResponse(requestMessage) as ScsRemoteInvokeReturnMessage;
             if (responseMessage == null)
             {
                 return null;
@@ -68,7 +69,7 @@ public override System.Runtime.Remoting.Messaging.IMessage Invoke(System.Runtime
 }
              */
             object[] args = null;
-            int largo = 0;
+            var largo = 0;
 
             if (responseMessage.Parameters != null)
             {
@@ -76,8 +77,8 @@ public override System.Runtime.Remoting.Messaging.IMessage Invoke(System.Runtime
                 largo = args.Length;
             }
             return responseMessage.RemoteException != null
-                       ? new ReturnMessage(responseMessage.RemoteException, message)
-                       : new ReturnMessage(responseMessage.ReturnValue, args, largo, message.LogicalCallContext, message);
+                ? new ReturnMessage(responseMessage.RemoteException, message)
+                : new ReturnMessage(responseMessage.ReturnValue, args, largo, message.LogicalCallContext, message);
         }
     }
 }

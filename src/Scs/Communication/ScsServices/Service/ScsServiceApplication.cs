@@ -10,53 +10,14 @@ using Hik.Communication.ScsServices.Communication.Messages;
 namespace Hik.Communication.ScsServices.Service
 {
     /// <summary>
-    /// Implements IScsServiceApplication and provides all functionallity.
+    ///     Implements IScsServiceApplication and provides all functionallity.
     /// </summary>
     internal class ScsServiceApplication : IScsServiceApplication
     {
-        #region Public events
-
-        /// <summary>
-        /// This event is raised when a new client connected to the service.
-        /// </summary>
-        public event EventHandler<ServiceClientEventArgs> ClientConnected;
-
-        /// <summary>
-        /// This event is raised when a client disconnected from the service.
-        /// </summary>
-        public event EventHandler<ServiceClientEventArgs> ClientDisconnected;
-
-
-
-        #endregion
-
-        #region Private fields
-
-        /// <summary>
-        /// Underlying IScsServer object to accept and manage client connections.
-        /// </summary>
-        private readonly IScsServer _scsServer;
-
-        /// <summary>
-        /// User service objects that is used to invoke incoming method invocation requests.
-        /// Key: Service interface type's name.
-        /// Value: Service object.
-        /// </summary>
-        private readonly ThreadSafeSortedList<string, ServiceObject> _serviceObjects;
-
-        /// <summary>
-        /// All connected clients to service.
-        /// Key: Client's unique Id.
-        /// Value: Reference to the client.
-        /// </summary>
-        private readonly ThreadSafeSortedList<string, IScsServiceClient> _serviceClients;
-
-        #endregion
-
         #region Constructors
 
         /// <summary>
-        /// Creates a new ScsServiceApplication object.
+        ///     Creates a new ScsServiceApplication object.
         /// </summary>
         /// <param name="scsServer">Underlying IScsServer object to accept and manage client connections</param>
         /// <exception cref="ArgumentNullException">Throws ArgumentNullException if scsServer argument is null</exception>
@@ -76,10 +37,131 @@ namespace Hik.Communication.ScsServices.Service
 
         #endregion
 
+        #region ServiceObject class
+
+        /// <summary>
+        ///     Represents a user service object.
+        ///     It is used to invoke methods on a ScsService object.
+        /// </summary>
+        private sealed class ServiceObject
+        {
+            /// <summary>
+            ///     This collection stores a list of all methods of service object.
+            ///     Key: Method name
+            ///     Value: Informations about method.
+            /// </summary>
+            private readonly SortedList<string, MethodInfo> _methods;
+
+            /// <summary>
+            ///     Creates a new ServiceObject.
+            /// </summary>
+            /// <param name="serviceInterfaceType">Type of service interface</param>
+            /// <param name="service">The service object that is used to invoke methods on</param>
+            public ServiceObject(Type serviceInterfaceType, ScsService service)
+            {
+                Service = service;
+                var classAttributes = serviceInterfaceType.GetCustomAttributes(typeof (ScsServiceAttribute), true);
+                if (classAttributes.Length <= 0)
+                {
+                    throw new Exception("Service interface (" + serviceInterfaceType.Name +
+                                        ") must has ScsService attribute.");
+                }
+
+                _methods = new SortedList<string, MethodInfo>();
+                BuscarMetodos(serviceInterfaceType);
+            }
+
+            /// <summary>
+            ///     The service object that is used to invoke methods on.
+            /// </summary>
+            public ScsService Service { get; }
+
+            /// <summary>
+            ///     ScsService attribute of Service object's class.
+            /// </summary>
+            public ScsServiceAttribute ServiceAttribute { get; private set; }
+
+            /// <summary>
+            ///     Permite buscar los metodos no solo de la interface que implementa la clase de servicio sino tambien de las
+            ///     interfaces heredadas
+            /// </summary>
+            /// <param name="serviceInterfaceType"></param>
+            private void BuscarMetodos(Type serviceInterfaceType)
+            {
+                if (serviceInterfaceType == null)
+                    return;
+                foreach (var methodInfo in serviceInterfaceType.GetMethods())
+                    _methods.Add(methodInfo.Name, methodInfo);
+
+                foreach (var p in serviceInterfaceType.GetInterfaces())
+                    BuscarMetodos(p);
+            }
+
+            /// <summary>
+            ///     Invokes a method of Service object.
+            /// </summary>
+            /// <param name="methodName">Name of the method to invoke</param>
+            /// <param name="parameters">Parameters of method</param>
+            /// <returns>Return value of method</returns>
+            public object InvokeMethod(string methodName, params object[] parameters)
+            {
+                //Check if there is a method with name methodName
+                if (!_methods.ContainsKey(methodName))
+                {
+                    throw new Exception("There is not a method with name '" + methodName + "' in service class.");
+                }
+
+                //Get method
+                var method = _methods[methodName];
+
+                //Invoke method and return invoke result
+                return method.Invoke(Service, parameters);
+            }
+        }
+
+        #endregion
+
+        #region Public events
+
+        /// <summary>
+        ///     This event is raised when a new client connected to the service.
+        /// </summary>
+        public event EventHandler<ServiceClientEventArgs> ClientConnected;
+
+        /// <summary>
+        ///     This event is raised when a client disconnected from the service.
+        /// </summary>
+        public event EventHandler<ServiceClientEventArgs> ClientDisconnected;
+
+        #endregion
+
+        #region Private fields
+
+        /// <summary>
+        ///     Underlying IScsServer object to accept and manage client connections.
+        /// </summary>
+        private readonly IScsServer _scsServer;
+
+        /// <summary>
+        ///     User service objects that is used to invoke incoming method invocation requests.
+        ///     Key: Service interface type's name.
+        ///     Value: Service object.
+        /// </summary>
+        private readonly ThreadSafeSortedList<string, ServiceObject> _serviceObjects;
+
+        /// <summary>
+        ///     All connected clients to service.
+        ///     Key: Client's unique Id.
+        ///     Value: Reference to the client.
+        /// </summary>
+        private readonly ThreadSafeSortedList<string, IScsServiceClient> _serviceClients;
+
+        #endregion
+
         #region Public methods
 
         /// <summary>
-        /// Starts service application.
+        ///     Starts service application.
         /// </summary>
         public void Start()
         {
@@ -87,7 +169,7 @@ namespace Hik.Communication.ScsServices.Service
         }
 
         /// <summary>
-        /// Stops service application.
+        ///     Stops service application.
         /// </summary>
         public void Stop()
         {
@@ -95,11 +177,14 @@ namespace Hik.Communication.ScsServices.Service
         }
 
         /// <summary>
-        /// Adds a service object to this service application.
-        /// Only single service object can be added for a service interface type.
+        ///     Adds a service object to this service application.
+        ///     Only single service object can be added for a service interface type.
         /// </summary>
         /// <typeparam name="TServiceInterface">Service interface type</typeparam>
-        /// <typeparam name="TServiceClass">Service class type. Must be delivered from ScsService and must implement TServiceInterface.</typeparam>
+        /// <typeparam name="TServiceClass">
+        ///     Service class type. Must be delivered from ScsService and must implement
+        ///     TServiceInterface.
+        /// </typeparam>
         /// <param name="service">An instance of TServiceClass.</param>
         /// <exception cref="ArgumentNullException">Throws ArgumentNullException if service argument is null</exception>
         /// <exception cref="Exception">Throws Exception if service is already added before</exception>
@@ -112,7 +197,7 @@ namespace Hik.Communication.ScsServices.Service
                 throw new ArgumentNullException(nameof(service));
             }
 
-            var type = typeof(TServiceInterface);
+            var type = typeof (TServiceInterface);
             if (_serviceObjects[type.Name] != null)
             {
                 throw new Exception("Service '" + type.Name + "' is already added before.");
@@ -122,15 +207,15 @@ namespace Hik.Communication.ScsServices.Service
         }
 
         /// <summary>
-        /// Removes a previously added service object from this service application.
-        /// It removes object according to interface type.
+        ///     Removes a previously added service object from this service application.
+        ///     It removes object according to interface type.
         /// </summary>
         /// <typeparam name="TServiceInterface">Service interface type</typeparam>
         /// <returns>True: removed. False: no service object with this interface</returns>
         public bool RemoveService<TServiceInterface>()
             where TServiceInterface : class
         {
-            return _serviceObjects.Remove(typeof(TServiceInterface).Name);
+            return _serviceObjects.Remove(typeof (TServiceInterface).Name);
         }
 
         #endregion
@@ -138,7 +223,7 @@ namespace Hik.Communication.ScsServices.Service
         #region Private methods
 
         /// <summary>
-        /// Handles ClientConnected event of _scsServer object.
+        ///     Handles ClientConnected event of _scsServer object.
         /// </summary>
         /// <param name="sender">Source of event</param>
         /// <param name="e">Event arguments</param>
@@ -154,7 +239,7 @@ namespace Hik.Communication.ScsServices.Service
         }
 
         /// <summary>
-        /// Handles ClientDisconnected event of _scsServer object.
+        ///     Handles ClientDisconnected event of _scsServer object.
         /// </summary>
         /// <param name="sender">Source of event</param>
         /// <param name="e">Event arguments</param>
@@ -171,15 +256,15 @@ namespace Hik.Communication.ScsServices.Service
         }
 
         /// <summary>
-        /// Handles MessageReceived events of all clients, evaluates each message,
-        /// finds appropriate service object and invokes appropriate method.
+        ///     Handles MessageReceived events of all clients, evaluates each message,
+        ///     finds appropriate service object and invokes appropriate method.
         /// </summary>
         /// <param name="sender">Source of event</param>
         /// <param name="e">Event arguments</param>
         private void Client_MessageReceived(object sender, MessageEventArgs e)
         {
             //Get RequestReplyMessenger object (sender of event) to get client
-            var requestReplyMessenger = (RequestReplyMessenger<IScsServerClient>)sender;
+            var requestReplyMessenger = (RequestReplyMessenger<IScsServerClient>) sender;
 
             //Cast message to ScsRemoteInvokeMessage and check it
             var invokeMessage = e.Message as ScsRemoteInvokeMessage;
@@ -202,7 +287,8 @@ namespace Hik.Communication.ScsServices.Service
                 var serviceObject = _serviceObjects[invokeMessage.ServiceClassName];
                 if (serviceObject == null)
                 {
-                    SendInvokeResponse(requestReplyMessenger, invokeMessage, null, new ScsRemoteException("There is no service with name '" + invokeMessage.ServiceClassName + "'"));
+                    SendInvokeResponse(requestReplyMessenger, invokeMessage, null,
+                        new ScsRemoteException("There is no service with name '" + invokeMessage.ServiceClassName + "'"));
                     return;
                 }
 
@@ -230,42 +316,49 @@ namespace Hik.Communication.ScsServices.Service
                 {
                     var innerEx = ex.InnerException;
                     //Si el atributo de servicio del objeto es null, al momento de levantar la excepcion no se muestra el error real sino un Object Reference
-                    var detalle = serviceObject.ServiceAttribute != null ? Environment.NewLine + "Service Version: " + serviceObject.ServiceAttribute.Version : string.Empty;
+                    var detalle = serviceObject.ServiceAttribute != null
+                        ? Environment.NewLine + "Service Version: " + serviceObject.ServiceAttribute.Version
+                        : string.Empty;
                     var excepcion = new ScsRemoteException(innerEx.Message + detalle, innerEx);
                     SendInvokeResponse(requestReplyMessenger, invokeMessage, null, excepcion);
                 }
                 catch (Exception ex)
                 {
-                    SendInvokeResponse(requestReplyMessenger, invokeMessage, null, new ScsRemoteException(ex.Message + Environment.NewLine + "Service Version: " + serviceObject.ServiceAttribute.Version, ex));
+                    SendInvokeResponse(requestReplyMessenger, invokeMessage, null,
+                        new ScsRemoteException(
+                            ex.Message + Environment.NewLine + "Service Version: " +
+                            serviceObject.ServiceAttribute.Version, ex));
                 }
             }
             catch (Exception ex)
             {
-                SendInvokeResponse(requestReplyMessenger, invokeMessage, null, new ScsRemoteException("An error occured during remote service method call.", ex));
+                SendInvokeResponse(requestReplyMessenger, invokeMessage, null,
+                    new ScsRemoteException("An error occured during remote service method call.", ex));
             }
         }
 
         /// <summary>
-        /// Sends response to the remote application that invoked a service method.
+        ///     Sends response to the remote application that invoked a service method.
         /// </summary>
         /// <param name="client">Client that sent invoke message</param>
         /// <param name="requestMessage">Request message</param>
         /// <param name="returnValue">Return value to send</param>
         /// <param name="exception">Exception to send</param>
         /// <param name="parameters">Los parametros posiblemente modificados en la llamada al metodo mediante out o ref</param>
-        private static void SendInvokeResponse(IMessenger client, IScsMessage requestMessage, object returnValue, ScsRemoteException exception, object[] parameters = null)
+        private static void SendInvokeResponse(IMessenger client, IScsMessage requestMessage, object returnValue,
+            ScsRemoteException exception, object[] parameters = null)
         {
             try
             {
                 client.SendMessage(
                     new ScsRemoteInvokeReturnMessage
-                        {
-                            RepliedMessageId = requestMessage.MessageId,
-                            ReturnValue = returnValue,
-                            RemoteException = exception,
-                            //Se devuelven todos los parametros con su respectiva modificacion a fin de poder tener metodos con out y ref
-                            Parameters = parameters
-                        });
+                    {
+                        RepliedMessageId = requestMessage.MessageId,
+                        ReturnValue = returnValue,
+                        RemoteException = exception,
+                        //Se devuelven todos los parametros con su respectiva modificacion a fin de poder tener metodos con out y ref
+                        Parameters = parameters
+                    });
             }
             catch (Exception ex)
             {
@@ -276,7 +369,7 @@ namespace Hik.Communication.ScsServices.Service
                         new ScsRemoteInvokeReturnMessage
                         {
                             RepliedMessageId = requestMessage.MessageId,
-                            RemoteException = new ScsRemoteException("SendInvokeResponse: " + ex.Message, ex),
+                            RemoteException = new ScsRemoteException("SendInvokeResponse: " + ex.Message, ex)
                         });
                 }
 
@@ -288,7 +381,7 @@ namespace Hik.Communication.ScsServices.Service
         }
 
         /// <summary>
-        /// Raises ClientConnected event.
+        ///     Raises ClientConnected event.
         /// </summary>
         /// <param name="client"></param>
         private void OnClientConnected(IScsServiceClient client)
@@ -298,7 +391,7 @@ namespace Hik.Communication.ScsServices.Service
         }
 
         /// <summary>
-        /// Raises ClientDisconnected event.
+        ///     Raises ClientDisconnected event.
         /// </summary>
         /// <param name="client"></param>
         private void OnClientDisconnected(IScsServiceClient client)
@@ -308,88 +401,5 @@ namespace Hik.Communication.ScsServices.Service
         }
 
         #endregion
-
-        #region ServiceObject class
-
-        /// <summary>
-        /// Represents a user service object.
-        /// It is used to invoke methods on a ScsService object.
-        /// </summary>
-        private sealed class ServiceObject
-        {
-            /// <summary>
-            /// The service object that is used to invoke methods on.
-            /// </summary>
-            public ScsService Service { get; }
-
-            /// <summary>
-            /// ScsService attribute of Service object's class.
-            /// </summary>
-            public ScsServiceAttribute ServiceAttribute { get; private set; }
-
-            /// <summary>
-            /// This collection stores a list of all methods of service object.
-            /// Key: Method name
-            /// Value: Informations about method. 
-            /// </summary>
-            private readonly SortedList<string, MethodInfo> _methods;
-
-            /// <summary>
-            /// Creates a new ServiceObject.
-            /// </summary>
-            /// <param name="serviceInterfaceType">Type of service interface</param>
-            /// <param name="service">The service object that is used to invoke methods on</param>
-            public ServiceObject(Type serviceInterfaceType, ScsService service)
-            {
-                Service = service;
-                var classAttributes = serviceInterfaceType.GetCustomAttributes(typeof(ScsServiceAttribute), true);
-                if (classAttributes.Length <= 0)
-                {
-                    throw new Exception("Service interface (" + serviceInterfaceType.Name + ") must has ScsService attribute.");
-                }
-
-                _methods = new SortedList<string, MethodInfo>();
-                BuscarMetodos(serviceInterfaceType);
-
-            }
-
-            /// <summary>
-            /// Permite buscar los metodos no solo de la interface que implementa la clase de servicio sino tambien de las interfaces heredadas
-            /// </summary>
-            /// <param name="serviceInterfaceType"></param>
-            private void BuscarMetodos(Type serviceInterfaceType)
-            {
-                if (serviceInterfaceType == null)
-                    return;
-                foreach (var methodInfo in serviceInterfaceType.GetMethods())
-                    _methods.Add(methodInfo.Name, methodInfo);
-
-                foreach (var p in serviceInterfaceType.GetInterfaces())
-                    BuscarMetodos(p);
-            }
-
-            /// <summary>
-            /// Invokes a method of Service object.
-            /// </summary>
-            /// <param name="methodName">Name of the method to invoke</param>
-            /// <param name="parameters">Parameters of method</param>
-            /// <returns>Return value of method</returns>
-            public object InvokeMethod(string methodName, params object[] parameters)
-            {
-                //Check if there is a method with name methodName
-                if (!_methods.ContainsKey(methodName))
-                {
-                    throw new Exception("There is not a method with name '" + methodName + "' in service class.");
-                }
-
-                //Get method
-                var method = _methods[methodName];
-
-                //Invoke method and return invoke result
-                return method.Invoke(Service, parameters);
-            }
-        }
-
-        #endregion       
     }
 }

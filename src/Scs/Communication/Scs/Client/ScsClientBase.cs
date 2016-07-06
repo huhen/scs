@@ -1,37 +1,62 @@
 ﻿using System;
 using Hik.Communication.Scs.Communication;
-using Hik.Communication.Scs.Communication.Messages;
 using Hik.Communication.Scs.Communication.Channels;
+using Hik.Communication.Scs.Communication.Messages;
 using Hik.Communication.Scs.Communication.Protocols;
 using Hik.Threading;
 
 namespace Hik.Communication.Scs.Client
 {
     /// <summary>
-    /// This class provides base functionality for client classes.
+    ///     This class provides base functionality for client classes.
     /// </summary>
     internal abstract class ScsClientBase : IScsClient
     {
+        #region Constructor
+
+        /// <summary>
+        ///     Constructor.
+        /// </summary>
+        protected ScsClientBase()
+        {
+            _pingTimer = new Timer(30000);
+            _pingTimer.Elapsed += PingTimer_Elapsed;
+            ConnectTimeout = _defaultConnectionAttemptTimeout;
+            WireProtocol = WireProtocolManager.GetDefaultWireProtocol();
+        }
+
+        #endregion
+
+        #region Abstract methods
+
+        /// <summary>
+        ///     This method is implemented by derived classes to create appropriate communication channel.
+        /// </summary>
+        /// <returns>Ready communication channel to communicate</returns>
+        protected abstract ICommunicationChannel CreateCommunicationChannel();
+
+        #endregion
+
         #region Public events
 
         /// <summary>
-        /// This event is raised when a new message is received.
+        ///     This event is raised when a new message is received.
         /// </summary>
         public event EventHandler<MessageEventArgs> MessageReceived;
 
         /// <summary>
-        /// This event is raised when a new message is sent without any error.
-        /// It does not guaranties that message is properly handled and processed by remote application.
+        ///     This event is raised when a new message is sent without any error.
+        ///     It does not guaranties that message is properly handled and processed by remote application.
         /// </summary>
         public event EventHandler<MessageEventArgs> MessageSent;
 
         /// <summary>
-        /// This event is raised when communication channel closed.
+        ///     This event is raised when communication channel closed.
         /// </summary>
         public event EventHandler Connected;
 
         /// <summary>
-        /// This event is raised when client disconnected from server.
+        ///     This event is raised when client disconnected from server.
         /// </summary>
         public event EventHandler Disconnected;
 
@@ -40,13 +65,13 @@ namespace Hik.Communication.Scs.Client
         #region Public properties
 
         /// <summary>
-        /// Timeout for connecting to a server (as milliseconds).
-        /// Default value: 15 seconds (15000 ms).
+        ///     Timeout for connecting to a server (as milliseconds).
+        ///     Default value: 15 seconds (15000 ms).
         /// </summary>
         public int ConnectTimeout { get; set; }
 
         /// <summary>
-        /// Gets/sets wire protocol that is used while reading and writing messages.
+        ///     Gets/sets wire protocol that is used while reading and writing messages.
         /// </summary>
         public IScsWireProtocol WireProtocol
         {
@@ -61,25 +86,27 @@ namespace Hik.Communication.Scs.Client
                 _wireProtocol = value;
             }
         }
+
         private IScsWireProtocol _wireProtocol;
 
         /// <summary>
-        /// Gets the communication state of the Client.
+        ///     Gets the communication state of the Client.
         /// </summary>
-        public CommunicationStates CommunicationState => _communicationChannel?.CommunicationState ?? CommunicationStates.Disconnected;
+        public CommunicationStates CommunicationState
+            => _communicationChannel?.CommunicationState ?? CommunicationStates.Disconnected;
 
         /// <summary>
-        /// Gets the time of the last succesfully received message.
+        ///     Gets the time of the last succesfully received message.
         /// </summary>
         public DateTime LastReceivedMessageTime => _communicationChannel?.LastReceivedMessageTime ?? DateTime.MinValue;
 
         /// <summary>
-        /// Gets the time of the last succesfully received message.
+        ///     Gets the time of the last succesfully received message.
         /// </summary>
         public DateTime LastSentMessageTime => _communicationChannel?.LastSentMessageTime ?? DateTime.MinValue;
 
         /// <summary>
-        /// Es util para almacenar cosas dentro del objeto
+        ///     Es util para almacenar cosas dentro del objeto
         /// </summary>
         public object Tag { get; set; }
 
@@ -88,41 +115,26 @@ namespace Hik.Communication.Scs.Client
         #region Private fields
 
         /// <summary>
-        /// Default timeout value for connecting a server.
+        ///     Default timeout value for connecting a server.
         /// </summary>
         private const int _defaultConnectionAttemptTimeout = 15000; //15 seconds.
 
         /// <summary>
-        /// The communication channel that is used by client to send and receive messages.
+        ///     The communication channel that is used by client to send and receive messages.
         /// </summary>
         private ICommunicationChannel _communicationChannel;
 
         /// <summary>
-        /// This timer is used to send PingMessage messages to server periodically.
+        ///     This timer is used to send PingMessage messages to server periodically.
         /// </summary>
         private readonly Timer _pingTimer;
-
-        #endregion
-
-        #region Constructor
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        protected ScsClientBase()
-        {
-            _pingTimer = new Timer(30000);
-            _pingTimer.Elapsed += PingTimer_Elapsed;
-            ConnectTimeout = _defaultConnectionAttemptTimeout;
-            WireProtocol = WireProtocolManager.GetDefaultWireProtocol();
-        }
 
         #endregion
 
         #region Public methods
 
         /// <summary>
-        /// Connects to server.
+        ///     Connects to server.
         /// </summary>
         public void Connect()
         {
@@ -138,8 +150,8 @@ namespace Hik.Communication.Scs.Client
         }
 
         /// <summary>
-        /// Disconnects from server.
-        /// Does nothing if already disconnected.
+        ///     Disconnects from server.
+        ///     Does nothing if already disconnected.
         /// </summary>
         public void Disconnect()
         {
@@ -152,7 +164,7 @@ namespace Hik.Communication.Scs.Client
         }
 
         /// <summary>
-        /// Disposes this object and closes underlying connection.
+        ///     Disposes this object and closes underlying connection.
         /// </summary>
         public void Dispose()
         {
@@ -160,10 +172,13 @@ namespace Hik.Communication.Scs.Client
         }
 
         /// <summary>
-        /// Sends a message to the server.
+        ///     Sends a message to the server.
         /// </summary>
         /// <param name="message">Message to be sent</param>
-        /// <exception cref="CommunicationStateException">Throws a CommunicationStateException if client is not connected to the server.</exception>
+        /// <exception cref="CommunicationStateException">
+        ///     Throws a CommunicationStateException if client is not connected to the
+        ///     server.
+        /// </exception>
         public void SendMessage(IScsMessage message)
         {
             if (CommunicationState != CommunicationStates.Connected)
@@ -176,20 +191,10 @@ namespace Hik.Communication.Scs.Client
 
         #endregion
 
-        #region Abstract methods
-
-        /// <summary>
-        /// This method is implemented by derived classes to create appropriate communication channel.
-        /// </summary>
-        /// <returns>Ready communication channel to communicate</returns>
-        protected abstract ICommunicationChannel CreateCommunicationChannel();
-
-        #endregion
-
         #region Private methods
 
         /// <summary>
-        /// Handles MessageReceived event of _communicationChannel object.
+        ///     Handles MessageReceived event of _communicationChannel object.
         /// </summary>
         /// <param name="sender">Source of event</param>
         /// <param name="e">Event arguments</param>
@@ -204,7 +209,7 @@ namespace Hik.Communication.Scs.Client
         }
 
         /// <summary>
-        /// Handles MessageSent event of _communicationChannel object.
+        ///     Handles MessageSent event of _communicationChannel object.
         /// </summary>
         /// <param name="sender">Source of event</param>
         /// <param name="e">Event arguments</param>
@@ -214,7 +219,7 @@ namespace Hik.Communication.Scs.Client
         }
 
         /// <summary>
-        /// Handles Disconnected event of _communicationChannel object.
+        ///     Handles Disconnected event of _communicationChannel object.
         /// </summary>
         /// <param name="sender">Source of event</param>
         /// <param name="e">Event arguments</param>
@@ -225,7 +230,7 @@ namespace Hik.Communication.Scs.Client
         }
 
         /// <summary>
-        /// Handles Elapsed event of _pingTimer to send PingMessage messages to server.
+        ///     Handles Elapsed event of _pingTimer to send PingMessage messages to server.
         /// </summary>
         /// <param name="sender">Source of event</param>
         /// <param name="e">Event arguments</param>
@@ -239,17 +244,17 @@ namespace Hik.Communication.Scs.Client
             try
             {
                 var lastMinute = DateTime.Now.AddMinutes(-1);
-                if (_communicationChannel.LastReceivedMessageTime > lastMinute || _communicationChannel.LastSentMessageTime > lastMinute)
+                if (_communicationChannel.LastReceivedMessageTime > lastMinute ||
+                    _communicationChannel.LastSentMessageTime > lastMinute)
                 {
                     return;
                 }
 
                 _communicationChannel.SendMessage(new ScsPingMessage());
             }
-            // ReSharper disable once EmptyGeneralCatchClause
+                // ReSharper disable once EmptyGeneralCatchClause
             catch
             {
-
             }
         }
 
@@ -258,7 +263,7 @@ namespace Hik.Communication.Scs.Client
         #region Event raising methods
 
         /// <summary>
-        /// Raises Connected event.
+        ///     Raises Connected event.
         /// </summary>
         protected virtual void OnConnected()
         {
@@ -267,7 +272,7 @@ namespace Hik.Communication.Scs.Client
         }
 
         /// <summary>
-        /// Raises Disconnected event.
+        ///     Raises Disconnected event.
         /// </summary>
         protected virtual void OnDisconnected()
         {
@@ -276,7 +281,7 @@ namespace Hik.Communication.Scs.Client
         }
 
         /// <summary>
-        /// Raises MessageReceived event.
+        ///     Raises MessageReceived event.
         /// </summary>
         /// <param name="message">Received message</param>
         protected virtual void OnMessageReceived(IScsMessage message)
@@ -286,7 +291,7 @@ namespace Hik.Communication.Scs.Client
         }
 
         /// <summary>
-        /// Raises MessageSent event.
+        ///     Raises MessageSent event.
         /// </summary>
         /// <param name="message">Received message</param>
         protected virtual void OnMessageSent(IScsMessage message)

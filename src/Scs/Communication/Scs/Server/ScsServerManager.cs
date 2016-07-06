@@ -1,9 +1,9 @@
-﻿//using System.Threading;
-using System;
+﻿using System;
+
 namespace Hik.Communication.Scs.Server
 {
     /// <summary>
-    /// Provides some functionality that are used by servers.
+    ///     Provides some functionality that are used by servers.
     /// </summary>
     internal static class ScsServerManager
     {
@@ -13,7 +13,7 @@ namespace Hik.Communication.Scs.Server
         private static long _lastClientId;*/
 
         /// <summary>
-        /// Gets an unique number to be used as idenfitier of a client.
+        ///     Gets an unique number to be used as idenfitier of a client.
         /// </summary>
         /// <returns></returns>
         public static /*long*/ string GetClientId()

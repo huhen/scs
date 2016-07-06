@@ -1,29 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using Hik.Communication.Scs.Client;
 using Hik.Communication.Scs.Client.Tcp;
 using Hik.Communication.Scs.Server;
 using Hik.Communication.Scs.Server.Tcp;
-using System.Collections.Generic;
+
 namespace Hik.Communication.Scs.Communication.EndPoints.Tcp
 {
     /// <summary>
-    /// Represens a TCP end point in SCS.
+    ///     Represens a TCP end point in SCS.
     /// </summary>
     public sealed class ScsTcpEndPoint : ScsEndPoint
     {
-        ///<summary>
-        /// IP address of the server.
-        ///</summary>
-        public string IpAddress { get; set; }
-
-        ///<summary>
-        /// Listening TCP Port for incoming connection requests on server.
-        ///</summary>
-        public int TcpPort { get; }
-
         /// <summary>
-        /// Creates a new ScsTcpEndPoint object with specified port number.
+        ///     Creates a new ScsTcpEndPoint object with specified port number.
         /// </summary>
         /// <param name="tcpPort">Listening TCP Port for incoming connection requests on server</param>
         public ScsTcpEndPoint(int tcpPort)
@@ -32,7 +23,7 @@ namespace Hik.Communication.Scs.Communication.EndPoints.Tcp
         }
 
         /// <summary>
-        /// Creates a new ScsTcpEndPoint object with specified IP address and port number.
+        ///     Creates a new ScsTcpEndPoint object with specified IP address and port number.
         /// </summary>
         /// <param name="ipAddress">IP address of the server</param>
         /// <param name="port">Listening TCP Port for incoming connection requests on server</param>
@@ -41,10 +32,10 @@ namespace Hik.Communication.Scs.Communication.EndPoints.Tcp
             IpAddress = ipAddress;
             TcpPort = port;
         }
-        
+
         /// <summary>
-        /// Creates a new ScsTcpEndPoint from a string address.
-        /// Address format must be like IPAddress:Port (For example: 127.0.0.1:10085).
+        ///     Creates a new ScsTcpEndPoint from a string address.
+        ///     Address format must be like IPAddress:Port (For example: 127.0.0.1:10085).
         /// </summary>
         /// <param name="address">TCP end point Address</param>
         /// <returns>Created ScsTcpEndpoint object</returns>
@@ -56,7 +47,17 @@ namespace Hik.Communication.Scs.Communication.EndPoints.Tcp
         }
 
         /// <summary>
-        /// Creates a Scs Server that uses this end point to listen incoming connections.
+        ///     IP address of the server.
+        /// </summary>
+        public string IpAddress { get; set; }
+
+        /// <summary>
+        ///     Listening TCP Port for incoming connection requests on server.
+        /// </summary>
+        public int TcpPort { get; }
+
+        /// <summary>
+        ///     Creates a Scs Server that uses this end point to listen incoming connections.
         /// </summary>
         /// <returns>Scs Server</returns>
         internal override IScsServer CreateServer()
@@ -65,7 +66,7 @@ namespace Hik.Communication.Scs.Communication.EndPoints.Tcp
         }
 
         /// <summary>
-        /// SSL
+        ///     SSL
         /// </summary>
         /// <param name="serverCert"></param>
         /// <param name="clientCerts"></param>
@@ -76,7 +77,7 @@ namespace Hik.Communication.Scs.Communication.EndPoints.Tcp
         }
 
         /// <summary>
-        /// Creates a Scs Client that uses this end point to connect to server.
+        ///     Creates a Scs Client that uses this end point to connect to server.
         /// </summary>
         /// <returns>Scs Client</returns>
         internal override IScsClient CreateClient()
@@ -85,19 +86,20 @@ namespace Hik.Communication.Scs.Communication.EndPoints.Tcp
         }
 
         /// <summary>
-        /// SSL
+        ///     SSL
         /// </summary>
         /// <param name="serverCert"></param>
         /// <param name="clientCert"></param>
         /// <param name="nombreServerCert"></param>
         /// <returns></returns>
-        internal override IScsClient CreateSecureClient(X509Certificate2 serverCert, X509Certificate2 clientCert, string nombreServerCert)
+        internal override IScsClient CreateSecureClient(X509Certificate2 serverCert, X509Certificate2 clientCert,
+            string nombreServerCert)
         {
             return new ScsTcpSslClient(this, serverCert, clientCert, nombreServerCert);
         }
 
         /// <summary>
-        /// Generates a string representation of this end point object.
+        ///     Generates a string representation of this end point object.
         /// </summary>
         /// <returns>String representation of this end point object</returns>
         public override string ToString()

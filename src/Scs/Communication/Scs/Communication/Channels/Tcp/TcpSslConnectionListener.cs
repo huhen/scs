@@ -1,50 +1,53 @@
-﻿using System.Net.Sockets;
-using System.Threading;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
-using Hik.Communication.Scs.Communication.EndPoints.Tcp;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Security;
+using System.Net.Sockets;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using Hik.Communication.Scs.Communication.EndPoints.Tcp;
 
 namespace Hik.Communication.Scs.Communication.Channels.Tcp
 {
     /// <summary>
-    /// This class is used to listen and accept incoming TCP
-    /// connection requests on a TCP port.
+    ///     This class is used to listen and accept incoming TCP
+    ///     connection requests on a TCP port.
     /// </summary>
     internal class TcpSslConnectionListener : ConnectionListenerBase
     {
+        private readonly List<X509Certificate2> _clientCerts;
+
         /// <summary>
-        /// The endpoint address of the server to listen incoming connections.
+        ///     The endpoint address of the server to listen incoming connections.
         /// </summary>
         private readonly ScsTcpEndPoint _endPoint;
 
+        private readonly X509Certificate _serverCert;
+
         /// <summary>
-        /// Server socket to listen incoming connection requests.
+        ///     Server socket to listen incoming connection requests.
         /// </summary>
         private TcpListener _listenerSocket;
 
         /// <summary>
-        /// The thread to listen socket
-        /// </summary>
-        private Thread _thread;
-
-        /// <summary>
-        /// A flag to control thread's running
+        ///     A flag to control thread's running
         /// </summary>
         private volatile bool _running;
 
-        private readonly X509Certificate _serverCert;
-        private readonly List<X509Certificate2> _clientCerts;
+        /// <summary>
+        ///     The thread to listen socket
+        /// </summary>
+        private Thread _thread;
 
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="endPoint"></param>
         /// <param name="serverCert"></param>
         /// <param name="clientCerts"></param>
-        public TcpSslConnectionListener(ScsTcpEndPoint endPoint, X509Certificate2 serverCert, List<X509Certificate2> clientCerts)
+        public TcpSslConnectionListener(ScsTcpEndPoint endPoint, X509Certificate2 serverCert,
+            List<X509Certificate2> clientCerts)
         {
             _endPoint = endPoint;
             _serverCert = serverCert;
@@ -52,7 +55,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         }
 
         /// <summary>
-        /// Starts listening incoming connections.
+        ///     Starts listening incoming connections.
         /// </summary>
         public override void Start()
         {
@@ -63,7 +66,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         }
 
         /// <summary>
-        /// Stops listening incoming connections.
+        ///     Stops listening incoming connections.
         /// </summary>
         public override void Stop()
         {
@@ -72,16 +75,16 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         }
 
         /// <summary>
-        /// Starts listening socket.
+        ///     Starts listening socket.
         /// </summary>
         private void StartSocket()
         {
-            _listenerSocket = new TcpListener(System.Net.IPAddress.Any, _endPoint.TcpPort);
+            _listenerSocket = new TcpListener(IPAddress.Any, _endPoint.TcpPort);
             _listenerSocket.Start();
         }
 
         /// <summary>
-        /// Stops listening socket.
+        ///     Stops listening socket.
         /// </summary>
         private void StopSocket()
         {
@@ -96,8 +99,8 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         }
 
         /// <summary>
-        /// Entrance point of the thread.
-        /// This method is used by the thread to listen incoming requests.
+        ///     Entrance point of the thread.
+        ///     This method is used by the thread to listen incoming requests.
         /// </summary>
         private void DoListenAsThread()
         {
@@ -108,8 +111,8 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
                     var client = _listenerSocket.AcceptTcpClient();
                     if (client.Connected)
                     {
-                        SslStream sslStream = new SslStream(client.GetStream(), false, ValidateCertificate);
-                        sslStream.AuthenticateAsServer(_serverCert, true, System.Security.Authentication.SslProtocols.Default, true);
+                        var sslStream = new SslStream(client.GetStream(), false, ValidateCertificate);
+                        sslStream.AuthenticateAsServer(_serverCert, true, SslProtocols.Default, true);
 
                         OnCommunicationChannelConnected(new TcpSslCommunicationChannel(_endPoint, client, sslStream));
                     }
@@ -137,14 +140,15 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         }
 
         /// <summary>
-        /// Validacion de certificado
+        ///     Validacion de certificado
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="certificate"></param>
         /// <param name="chain"></param>
         /// <param name="sslPolicyErrors"></param>
         /// <returns></returns>
-        public bool ValidateCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        public bool ValidateCertificate(object sender, X509Certificate certificate, X509Chain chain,
+            SslPolicyErrors sslPolicyErrors)
         {
             if (_clientCerts == null)
             {
@@ -153,7 +157,9 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
 
             if ((sslPolicyErrors == SslPolicyErrors.RemoteCertificateChainErrors) && (_clientCerts != null))
             {
-                return _clientCerts.Select(clientCert => clientCert.GetCertHashString()).Any(hashString => hashString != null && hashString.Equals(certificate.GetCertHashString()));
+                return
+                    _clientCerts.Select(clientCert => clientCert.GetCertHashString())
+                        .Any(hashString => hashString != null && hashString.Equals(certificate.GetCertHashString()));
             }
 
             return sslPolicyErrors == SslPolicyErrors.None;

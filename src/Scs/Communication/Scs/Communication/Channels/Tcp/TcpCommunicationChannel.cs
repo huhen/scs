@@ -12,75 +12,34 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using Hik.Communication.Scs.Communication.EndPoints;
 using Hik.Communication.Scs.Communication.EndPoints.Tcp;
 using Hik.Communication.Scs.Communication.Messages;
-using System.Threading;
+using Timer = Hik.Threading.Timer;
+
 namespace Hik.Communication.Scs.Communication.Channels.Tcp
 {
     /// <summary>
-    /// This class is used to communicate with a remote application over TCP/IP protocol.
+    ///     This class is used to communicate with a remote application over TCP/IP protocol.
     /// </summary>
     internal class TcpCommunicationChannel : CommunicationChannelBase
     {
-        #region Public properties
-
-        ///<summary>
-        /// Gets the endpoint of remote application.
-        ///</summary>
-        public override ScsEndPoint RemoteEndPoint => _remoteEndPoint;
-
-        private readonly ScsTcpEndPoint _remoteEndPoint;
-
-        #endregion
-
-        #region Private fields
-
-        /// <summary>
-        /// Size of the buffer that is used to receive bytes from TCP socket.
-        /// </summary>
-        private const int _receiveBufferSize = 4 * 1024; //4KB
-
-        /// <summary>
-        /// This buffer is used to receive bytes 
-        /// </summary>
-        private readonly byte[] _buffer;
-
-        /// <summary>
-        /// Socket object to send/reveice messages.
-        /// </summary>
-        private readonly Socket _clientSocket;
-
-        /// <summary>
-        /// A flag to control thread's running
-        /// </summary>
-        private volatile bool _running;
-
-        /// <summary>
-        /// This object is just used for thread synchronizing (locking).
-        /// </summary>
-        private readonly object _syncLock;
-
-#if UTILIZA_DESCONEXION_AUTOMATICA
-        private Threading.Timer _timerTimeout;
-        private int _timeoutFlag;
-#endif
-
-        #endregion
-
         #region Constructor
 
         /// <summary>
-        /// Creates a new TcpCommunicationChannel object.
+        ///     Creates a new TcpCommunicationChannel object.
         /// </summary>
-        /// <param name="clientSocket">A connected Socket object that is
-        /// used to communicate over network</param>
+        /// <param name="clientSocket">
+        ///     A connected Socket object that is
+        ///     used to communicate over network
+        /// </param>
         public TcpCommunicationChannel(Socket clientSocket)
         {
             _clientSocket = clientSocket;
             _clientSocket.NoDelay = true;
 
-            var ipEndPoint = (IPEndPoint)_clientSocket.RemoteEndPoint;
+            var ipEndPoint = (IPEndPoint) _clientSocket.RemoteEndPoint;
             _remoteEndPoint = new ScsTcpEndPoint(ipEndPoint.Address.ToString(), ipEndPoint.Port);
 
             _buffer = new byte[_receiveBufferSize];
@@ -92,16 +51,15 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         #region Public methods
 
         /// <summary>
-        /// Disconnects from remote application and closes channel.
+        ///     Disconnects from remote application and closes channel.
         /// </summary>
         public override void Disconnect()
         {
-
 #if UTILIZA_DESCONEXION_AUTOMATICA
             if (_timerTimeout != null)
             {
                 _timerTimeout.Stop();
-                _timerTimeout = null;//????
+                _timerTimeout = null; //????
             }
 #endif
 
@@ -131,90 +89,23 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
 
         #endregion
 
-        #region Protected methods
-
-        /// <summary>
-        /// Starts the thread to receive messages from socket.
-        /// </summary>
-        protected override void StartInternal()
-        {
-            _running = true;
-            _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, ReceiveCallback, null);
-
-#if UTILIZA_DESCONEXION_AUTOMATICA
-            //  if (res.IsCompleted)
-            {
-                _timerTimeout = new Threading.Timer(120000);
-                _timerTimeout.Elapsed += timerTimeout_Elapsed;
-                _timerTimeout.Start();
-            }
-#endif
-        }
-
-#if UTILIZA_DESCONEXION_AUTOMATICA
-        private void timerTimeout_Elapsed(object sender, EventArgs e)
-        {
-            _timerTimeout.Stop();
-
-            //int valorAnterior = Interlocked.CompareExchange(ref timeoutFlag, 1, 0);
-            if (Interlocked.CompareExchange(ref _timeoutFlag, 1, 0)/*valorAnterior*/ != 0)
-            {
-                //El flag ya ha sido seteado con lo cual nada!!
-                return;
-            }
-
-            Disconnect();
-        }
-#endif
-
-        /// <summary>
-        /// Sends a message to the remote application.
-        /// </summary>
-        /// <param name="message">Message to be sent</param>
-        protected override void SendMessageInternal(IScsMessage message)
-        {
-            //Send message
-            var totalSent = 0;
-            lock (_syncLock)
-            {
-                //Create a byte array from message according to current protocol
-                var messageBytes = WireProtocol.GetBytes(message);
-                //Send all bytes to the remote application
-                while (totalSent < messageBytes.Length)
-                {
-                    var sent = _clientSocket.Send(messageBytes, totalSent, messageBytes.Length - totalSent, SocketFlags.None);
-                    if (sent <= 0)
-                    {
-                        throw new CommunicationException("Message could not be sent via TCP socket. Only " + totalSent + " bytes of " + messageBytes.Length + " bytes are sent.");
-                    }
-
-                    totalSent += sent;
-                }
-
-                LastSentMessageTime = DateTime.Now;
-                OnMessageSent(message);
-            }
-        }
-
-        #endregion
-
         #region Private methods
 
         /// <summary>
-        /// This method is used as callback method in _clientSocket's BeginReceive method.
-        /// It reveives bytes from socker.
+        ///     This method is used as callback method in _clientSocket's BeginReceive method.
+        ///     It reveives bytes from socker.
         /// </summary>
         /// <param name="ar">Asyncronous call result</param>
         private void ReceiveCallback(IAsyncResult ar)
         {
-            if(!_running)
+            if (!_running)
             {
                 return;
             }
 
 #if UTILIZA_DESCONEXION_AUTOMATICA
             //int valorAnterior = Interlocked.CompareExchange(ref timeoutFlag, 2, 1);
-            if (Interlocked.CompareExchange(ref _timeoutFlag, 2, 1)/*valorAnterior*/ != 0)
+            if (Interlocked.CompareExchange(ref _timeoutFlag, 2, 1) /*valorAnterior*/!= 0)
             {
                 //El flag ya ha sido seteado con lo cual nada!!
                 return;
@@ -237,7 +128,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
 
                     //Read messages according to current wire protocol
                     var messages = WireProtocol.CreateMessages(receivedBytes);
-                    
+
                     //Raise MessageReceived event for all received messages
                     foreach (var message in messages)
                     {
@@ -263,7 +154,121 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
                 Disconnect();
             }
         }
-        
+
+        #endregion
+
+        #region Public properties
+
+        /// <summary>
+        ///     Gets the endpoint of remote application.
+        /// </summary>
+        public override ScsEndPoint RemoteEndPoint => _remoteEndPoint;
+
+        private readonly ScsTcpEndPoint _remoteEndPoint;
+
+        #endregion
+
+        #region Private fields
+
+        /// <summary>
+        ///     Size of the buffer that is used to receive bytes from TCP socket.
+        /// </summary>
+        private const int _receiveBufferSize = 4*1024; //4KB
+
+        /// <summary>
+        ///     This buffer is used to receive bytes
+        /// </summary>
+        private readonly byte[] _buffer;
+
+        /// <summary>
+        ///     Socket object to send/reveice messages.
+        /// </summary>
+        private readonly Socket _clientSocket;
+
+        /// <summary>
+        ///     A flag to control thread's running
+        /// </summary>
+        private volatile bool _running;
+
+        /// <summary>
+        ///     This object is just used for thread synchronizing (locking).
+        /// </summary>
+        private readonly object _syncLock;
+
+#if UTILIZA_DESCONEXION_AUTOMATICA
+        private Timer _timerTimeout;
+        private int _timeoutFlag;
+#endif
+
+        #endregion
+
+        #region Protected methods
+
+        /// <summary>
+        ///     Starts the thread to receive messages from socket.
+        /// </summary>
+        protected override void StartInternal()
+        {
+            _running = true;
+            _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, ReceiveCallback, null);
+
+#if UTILIZA_DESCONEXION_AUTOMATICA
+            //  if (res.IsCompleted)
+            {
+                _timerTimeout = new Timer(120000);
+                _timerTimeout.Elapsed += timerTimeout_Elapsed;
+                _timerTimeout.Start();
+            }
+#endif
+        }
+
+#if UTILIZA_DESCONEXION_AUTOMATICA
+        private void timerTimeout_Elapsed(object sender, EventArgs e)
+        {
+            _timerTimeout.Stop();
+
+            //int valorAnterior = Interlocked.CompareExchange(ref timeoutFlag, 1, 0);
+            if (Interlocked.CompareExchange(ref _timeoutFlag, 1, 0) /*valorAnterior*/!= 0)
+            {
+                //El flag ya ha sido seteado con lo cual nada!!
+                return;
+            }
+
+            Disconnect();
+        }
+#endif
+
+        /// <summary>
+        ///     Sends a message to the remote application.
+        /// </summary>
+        /// <param name="message">Message to be sent</param>
+        protected override void SendMessageInternal(IScsMessage message)
+        {
+            //Send message
+            var totalSent = 0;
+            lock (_syncLock)
+            {
+                //Create a byte array from message according to current protocol
+                var messageBytes = WireProtocol.GetBytes(message);
+                //Send all bytes to the remote application
+                while (totalSent < messageBytes.Length)
+                {
+                    var sent = _clientSocket.Send(messageBytes, totalSent, messageBytes.Length - totalSent,
+                        SocketFlags.None);
+                    if (sent <= 0)
+                    {
+                        throw new CommunicationException("Message could not be sent via TCP socket. Only " + totalSent +
+                                                         " bytes of " + messageBytes.Length + " bytes are sent.");
+                    }
+
+                    totalSent += sent;
+                }
+
+                LastSentMessageTime = DateTime.Now;
+                OnMessageSent(message);
+            }
+        }
+
         #endregion
     }
 }

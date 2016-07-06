@@ -1,21 +1,22 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using Hik.Communication.Scs.Client;
 using Hik.Communication.Scs.Communication.EndPoints.Tcp;
 using Hik.Communication.Scs.Server;
-using System.Collections.Generic;
+
 namespace Hik.Communication.Scs.Communication.EndPoints
 {
-    ///<summary>
-    /// Represents a server side end point in SCS.
-    ///</summary>
+    /// <summary>
+    ///     Represents a server side end point in SCS.
+    /// </summary>
     public abstract class ScsEndPoint
     {
         /// <summary>
-        /// Create a Scs End Point from a string.
-        /// Address must be formatted as: protocol://address
-        /// For example: tcp://89.43.104.179:10048 for a TCP endpoint with
-        /// IP 89.43.104.179 and port 10048.
+        ///     Create a Scs End Point from a string.
+        ///     Address must be formatted as: protocol://address
+        ///     For example: tcp://89.43.104.179:10048 for a TCP endpoint with
+        ///     IP 89.43.104.179 and port 10048.
         /// </summary>
         /// <param name="endPointAddress">Address to create endpoint</param>
         /// <returns>Created end point</returns>
@@ -35,7 +36,7 @@ namespace Hik.Communication.Scs.Communication.EndPoints
             }
 
             //Split protocol and address parts
-            var splittedEndPoint = endPointAddr.Split(new[] { "://" }, StringSplitOptions.RemoveEmptyEntries);
+            var splittedEndPoint = endPointAddr.Split(new[] {"://"}, StringSplitOptions.RemoveEmptyEntries);
             if (splittedEndPoint.Length != 2)
             {
                 throw new ApplicationException(endPointAddress + " is not a valid endpoint address.");
@@ -49,19 +50,20 @@ namespace Hik.Communication.Scs.Communication.EndPoints
                 case "tcp":
                     return new ScsTcpEndPoint(address);
                 default:
-                    throw new ApplicationException("Unsupported protocol " + protocol + " in end point " + endPointAddress);
+                    throw new ApplicationException("Unsupported protocol " + protocol + " in end point " +
+                                                   endPointAddress);
             }
         }
 
         /// <summary>
-        /// Creates a Scs Server that uses this end point to listen incoming connections.
+        ///     Creates a Scs Server that uses this end point to listen incoming connections.
         /// </summary>
         /// <returns>Scs Server</returns>
         internal abstract IScsServer CreateServer();
-        
-       
+
+
         /// <summary>
-        /// SSL
+        ///     SSL
         /// </summary>
         /// <param name="serverCert"></param>
         /// <param name="clientCerts"></param>
@@ -69,18 +71,19 @@ namespace Hik.Communication.Scs.Communication.EndPoints
         internal abstract IScsServer CreateSecureServer(X509Certificate2 serverCert, List<X509Certificate2> clientCerts);
 
         /// <summary>
-        /// Creates a Scs Server that uses this end point to connect to server.
+        ///     Creates a Scs Server that uses this end point to connect to server.
         /// </summary>
         /// <returns>Scs Client</returns>
         internal abstract IScsClient CreateClient();
 
         /// <summary>
-        /// SSL
+        ///     SSL
         /// </summary>
         /// <param name="serverCert"></param>
         /// <param name="clientCert"></param>
         /// <param name="nombreServerCert"></param>
         /// <returns></returns>
-        internal abstract IScsClient CreateSecureClient(X509Certificate2 serverCert, X509Certificate2 clientCert, string nombreServerCert);
+        internal abstract IScsClient CreateSecureClient(X509Certificate2 serverCert, X509Certificate2 clientCert,
+            string nombreServerCert);
     }
 }

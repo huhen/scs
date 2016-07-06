@@ -4,14 +4,14 @@ using System.Windows.Forms;
 namespace ProxyConfig
 {
     /// <summary>
-    /// Form for config proxy
+    ///     Form for config proxy
     /// </summary>
     public partial class FrmProxyConfig : Form
     {
         private ushort _proxyPort;
 
         /// <summary>
-        /// Constructor
+        ///     Constructor
         /// </summary>
         public FrmProxyConfig()
         {

@@ -6,42 +6,63 @@ using Hik.Communication.Scs.Communication.Messages;
 namespace Hik.Communication.Scs.Communication.Messengers
 {
     /// <summary>
-    /// This class is a wrapper for IMessenger and is used
-    /// to synchronize message receiving operation.
-    /// It extends RequestReplyMessenger.
-    /// It is suitable to use in applications those want to receive
-    /// messages by synchronized method calls instead of asynchronous 
-    /// MessageReceived event.
+    ///     This class is a wrapper for IMessenger and is used
+    ///     to synchronize message receiving operation.
+    ///     It extends RequestReplyMessenger.
+    ///     It is suitable to use in applications those want to receive
+    ///     messages by synchronized method calls instead of asynchronous
+    ///     MessageReceived event.
     /// </summary>
     public class SynchronizedMessenger<T> : RequestReplyMessenger<T> where T : IMessenger
     {
         #region Public properties
 
-        ///<summary>
-        /// Gets/sets capacity of the incoming message queue.
-        /// No message is received from remote application if
-        /// number of messages in internal queue exceeds this value.
-        /// Default value: int.MaxValue (2147483647).
-        ///</summary>
+        /// <summary>
+        ///     Gets/sets capacity of the incoming message queue.
+        ///     No message is received from remote application if
+        ///     number of messages in internal queue exceeds this value.
+        ///     Default value: int.MaxValue (2147483647).
+        /// </summary>
         public int IncomingMessageQueueCapacity { get; set; }
+
+        #endregion
+
+        #region Protected methods
+
+        /// <summary>
+        ///     Overrides
+        /// </summary>
+        /// <param name="message"></param>
+        protected override void OnMessageReceived(IScsMessage message)
+        {
+            lock (_receivingMessageQueue)
+            {
+                if (_receivingMessageQueue.Count < IncomingMessageQueueCapacity)
+                {
+                    _receivingMessageQueue.Enqueue(message);
+                }
+
+                _receiveWaiter.Set();
+            }
+        }
 
         #endregion
 
         #region Private fields
 
         /// <summary>
-        /// A queue that is used to store receiving messages until Receive(...)
-        /// method is called to get them.
+        ///     A queue that is used to store receiving messages until Receive(...)
+        ///     method is called to get them.
         /// </summary>
         private readonly Queue<IScsMessage> _receivingMessageQueue;
 
         /// <summary>
-        /// This object is used to synchronize/wait threads.
+        ///     This object is used to synchronize/wait threads.
         /// </summary>
         private readonly ManualResetEventSlim _receiveWaiter;
 
         /// <summary>
-        /// This boolean value indicates the running state of this class.
+        ///     This boolean value indicates the running state of this class.
         /// </summary>
         private volatile bool _running;
 
@@ -49,21 +70,20 @@ namespace Hik.Communication.Scs.Communication.Messengers
 
         #region Constructors
 
-        ///<summary>
-        /// Creates a new SynchronizedMessenger object.
-        ///</summary>
-        ///<param name="messenger">A IMessenger object to be used to send/receive messages</param>
+        /// <summary>
+        ///     Creates a new SynchronizedMessenger object.
+        /// </summary>
+        /// <param name="messenger">A IMessenger object to be used to send/receive messages</param>
         public SynchronizedMessenger(T messenger)
             : this(messenger, int.MaxValue)
         {
-
         }
 
-        ///<summary>
-        /// Creates a new SynchronizedMessenger object.
-        ///</summary>
-        ///<param name="messenger">A IMessenger object to be used to send/receive messages</param>
-        ///<param name="incomingMessageQueueCapacity">capacity of the incoming message queue</param>
+        /// <summary>
+        ///     Creates a new SynchronizedMessenger object.
+        /// </summary>
+        /// <param name="messenger">A IMessenger object to be used to send/receive messages</param>
+        /// <param name="incomingMessageQueueCapacity">capacity of the incoming message queue</param>
         public SynchronizedMessenger(T messenger, int incomingMessageQueueCapacity)
             : base(messenger)
         {
@@ -77,7 +97,7 @@ namespace Hik.Communication.Scs.Communication.Messengers
         #region Public methods
 
         /// <summary>
-        /// Starts the messenger.
+        ///     Starts the messenger.
         /// </summary>
         public override void Start()
         {
@@ -90,7 +110,7 @@ namespace Hik.Communication.Scs.Communication.Messengers
         }
 
         /// <summary>
-        /// Stops the messenger.
+        ///     Stops the messenger.
         /// </summary>
         public override void Stop()
         {
@@ -104,8 +124,8 @@ namespace Hik.Communication.Scs.Communication.Messengers
         }
 
         /// <summary>
-        /// This method is used to receive a message from remote application.
-        /// It waits until a message is received.
+        ///     This method is used to receive a message from remote application.
+        ///     It waits until a message is received.
         /// </summary>
         /// <returns>Received message</returns>
         public IScsMessage ReceiveMessage()
@@ -114,12 +134,12 @@ namespace Hik.Communication.Scs.Communication.Messengers
         }
 
         /// <summary>
-        /// This method is used to receive a message from remote application.
-        /// It waits until a message is received or timeout occurs.
+        ///     This method is used to receive a message from remote application.
+        ///     It waits until a message is received or timeout occurs.
         /// </summary>
         /// <param name="timeout">
-        /// Timeout value to wait if no message is received.
-        /// Use -1 to wait indefinitely.
+        ///     Timeout value to wait if no message is received.
+        ///     Use -1 to wait indefinitely.
         /// </param>
         /// <returns>Received message</returns>
         /// <exception cref="TimeoutException">Throws TimeoutException if timeout occurs</exception>
@@ -159,8 +179,8 @@ namespace Hik.Communication.Scs.Communication.Messengers
         }
 
         /// <summary>
-        /// This method is used to receive a specific type of message from remote application.
-        /// It waits until a message is received.
+        ///     This method is used to receive a specific type of message from remote application.
+        ///     It waits until a message is received.
         /// </summary>
         /// <returns>Received message</returns>
         public TMessage ReceiveMessage<TMessage>() where TMessage : IScsMessage
@@ -169,12 +189,12 @@ namespace Hik.Communication.Scs.Communication.Messengers
         }
 
         /// <summary>
-        /// This method is used to receive a specific type of message from remote application.
-        /// It waits until a message is received or timeout occurs.
+        ///     This method is used to receive a specific type of message from remote application.
+        ///     It waits until a message is received or timeout occurs.
         /// </summary>
         /// <param name="timeout">
-        /// Timeout value to wait if no message is received.
-        /// Use -1 to wait indefinitely.
+        ///     Timeout value to wait if no message is received.
+        ///     Use -1 to wait indefinitely.
         /// </param>
         /// <returns>Received message</returns>
         public TMessage ReceiveMessage<TMessage>(int timeout) where TMessage : IScsMessage
@@ -183,32 +203,11 @@ namespace Hik.Communication.Scs.Communication.Messengers
             if (!(receivedMessage is TMessage))
             {
                 throw new Exception("Unexpected message received." +
-                                    " Expected type: " + typeof(TMessage).Name +
+                                    " Expected type: " + typeof (TMessage).Name +
                                     ". Received message type: " + receivedMessage.GetType().Name);
             }
 
-            return (TMessage)receivedMessage;
-        }
-
-        #endregion
-
-        #region Protected methods
-
-        /// <summary>
-        /// Overrides
-        /// </summary>
-        /// <param name="message"></param>
-        protected override void OnMessageReceived(IScsMessage message)
-        {
-            lock (_receivingMessageQueue)
-            {
-                if (_receivingMessageQueue.Count < IncomingMessageQueueCapacity)
-                {
-                    _receivingMessageQueue.Enqueue(message);
-                }
-
-                _receiveWaiter.Set();
-            }
+            return (TMessage) receivedMessage;
         }
 
         #endregion
