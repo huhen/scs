@@ -17,7 +17,7 @@ namespace Hik.Communication.Scs.Server
         /// <summary>
         ///     A collection of clients that are connected to the server.
         /// </summary>
-        ThreadSafeSortedList<string, IScsServerClient> Clients { get; }
+        ThreadSafeSortedList<ulong, IScsServerClient> Clients { get; }
 
         /// <summary>
         ///     This event is raised when a new client connected to the server.

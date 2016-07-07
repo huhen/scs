@@ -26,7 +26,7 @@ namespace Hik.Communication.Scs.Server
         /// </summary>
         protected ScsServerBase()
         {
-            Clients = new ThreadSafeSortedList<string, IScsServerClient>();
+            Clients = new ThreadSafeSortedList<ulong, IScsServerClient>();
             WireProtocolFactory = WireProtocolManager.GetDefaultWireProtocolFactory();
         }
 
@@ -67,7 +67,7 @@ namespace Hik.Communication.Scs.Server
         /// <summary>
         ///     A collection of clients that are connected to the server.
         /// </summary>
-        public ThreadSafeSortedList<string, IScsServerClient> Clients { get; }
+        public ThreadSafeSortedList<ulong, IScsServerClient> Clients { get; }
 
         #endregion
 

@@ -62,7 +62,7 @@ namespace Hik.Communication.Scs.Server
         /// <summary>
         ///     Unique identifier for this client in server.
         /// </summary>
-        public string ClientId { get; set; }
+        public ulong ClientId { get; set; }
 
         /// <summary>
         ///     Gets the communication state of the Client.
