@@ -111,9 +111,17 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
                     var client = _listenerSocket.AcceptTcpClient();
                     if (client.Connected)
                     {
-                        var sslStream = new SslStream(client.GetStream(), false, ValidateCertificate);
-                        sslStream.AuthenticateAsServer(_serverCert, true, SslProtocols.Default, true);
-
+                        SslStream sslStream;
+                        if (_clientCerts != null)
+                        {
+                            sslStream = new SslStream(client.GetStream(), false, ValidateCertificate);
+                            sslStream.AuthenticateAsServer(_serverCert, true, SslProtocols.Default, true);
+                        }
+                        else
+                        {
+                            sslStream = new SslStream(client.GetStream(), false);
+                            sslStream.AuthenticateAsServer(_serverCert, false, SslProtocols.Default, true);
+                        }
                         OnCommunicationChannelConnected(new TcpSslCommunicationChannel(_endPoint, client, sslStream));
                     }
                 }

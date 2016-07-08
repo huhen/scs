@@ -51,16 +51,19 @@ namespace Hik.Communication.Scs.Client.Tcp
                 client.Client = TcpHelper.ConnectToServer(_serverEndPoint, ConnectTimeout);
                 //client.Connect(new IPEndPoint(IPAddress.Parse(_serverEndPoint.IpAddress), _serverEndPoint.TcpPort));
 
-                var sslStream = new SslStream(client.GetStream(), false, ValidateCertificate, SelectLocalCertificate);
+                SslStream sslStream;
 
-                var clientCertificates = new X509Certificate2Collection();
                 if (_clientCert != null)
                 {
-                    clientCertificates.Add(_clientCert);
+                    sslStream = new SslStream(client.GetStream(), false, ValidateCertificate, SelectLocalCertificate);
+                    var clientCertificates = new X509Certificate2Collection { _clientCert };
+                    sslStream.AuthenticateAsClient(_nombreServerCert, clientCertificates, SslProtocols.Default, false);
                 }
-
-                sslStream.AuthenticateAsClient(_nombreServerCert, clientCertificates, SslProtocols.Default, false);
-
+                else
+                {
+                    sslStream = new SslStream(client.GetStream(), false, ValidateCertificate, null);
+                    sslStream.AuthenticateAsClient(_nombreServerCert);
+                }
 
                 return new TcpSslCommunicationChannel(_serverEndPoint, client, sslStream);
             }
