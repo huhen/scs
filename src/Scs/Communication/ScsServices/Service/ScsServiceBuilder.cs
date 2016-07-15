@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
+﻿using System.Security.Cryptography.X509Certificates;
 using Hik.Communication.Scs.Communication.EndPoints;
 using Hik.Communication.Scs.Server;
 
@@ -25,12 +24,10 @@ namespace Hik.Communication.ScsServices.Service
         /// </summary>
         /// <param name="endPoint"></param>
         /// <param name="serverCert"></param>
-        /// <param name="clientCerts"></param>
         /// <returns></returns>
-        public static IScsServiceApplication CreateSecureService(ScsEndPoint endPoint, X509Certificate2 serverCert,
-            List<X509Certificate2> clientCerts)
+        public static IScsServiceApplication CreateSecureService(ScsEndPoint endPoint, X509Certificate2 serverCert)
         {
-            return new ScsServiceApplication(ScsServerFactory.CreateSecureServer(endPoint, serverCert, clientCerts));
+            return new ScsServiceApplication(ScsServerFactory.CreateSecureServer(endPoint, serverCert));
         }
     }
 }

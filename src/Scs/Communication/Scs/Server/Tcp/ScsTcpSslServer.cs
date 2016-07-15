@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
+﻿using System.Security.Cryptography.X509Certificates;
 using Hik.Communication.Scs.Communication.Channels;
 using Hik.Communication.Scs.Communication.Channels.Tcp;
 using Hik.Communication.Scs.Communication.EndPoints.Tcp;
@@ -11,8 +10,6 @@ namespace Hik.Communication.Scs.Server.Tcp
     /// </summary>
     internal class ScsTcpSslServer : ScsServerBase
     {
-        private readonly List<X509Certificate2> _clientCerts;
-
         /// <summary>
         ///     The endpoint address of the server to listen incoming connections.
         /// </summary>
@@ -25,12 +22,10 @@ namespace Hik.Communication.Scs.Server.Tcp
         /// </summary>
         /// <param name="endPoint"></param>
         /// <param name="serverCert"></param>
-        /// <param name="clientCerts"></param>
-        public ScsTcpSslServer(ScsTcpEndPoint endPoint, X509Certificate2 serverCert, List<X509Certificate2> clientCerts)
+        public ScsTcpSslServer(ScsTcpEndPoint endPoint, X509Certificate2 serverCert)
         {
             _endPoint = endPoint;
             _serverCert = serverCert;
-            _clientCerts = clientCerts;
         }
 
 
@@ -40,7 +35,7 @@ namespace Hik.Communication.Scs.Server.Tcp
         /// <returns>Created listener object</returns>
         protected override IConnectionListener CreateConnectionListener()
         {
-            return new TcpSslConnectionListener(_endPoint, _serverCert, _clientCerts);
+            return new TcpSslConnectionListener(_endPoint, _serverCert);
         }
     }
 }

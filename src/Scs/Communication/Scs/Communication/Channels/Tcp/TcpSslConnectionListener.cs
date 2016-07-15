@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
@@ -16,8 +14,6 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
     /// </summary>
     internal class TcpSslConnectionListener : ConnectionListenerBase
     {
-        private readonly List<X509Certificate2> _clientCerts;
-
         /// <summary>
         ///     The endpoint address of the server to listen incoming connections.
         /// </summary>
@@ -45,13 +41,10 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         /// <param name="endPoint"></param>
         /// <param name="serverCert"></param>
-        /// <param name="clientCerts"></param>
-        public TcpSslConnectionListener(ScsTcpEndPoint endPoint, X509Certificate2 serverCert,
-            List<X509Certificate2> clientCerts)
+        public TcpSslConnectionListener(ScsTcpEndPoint endPoint, X509Certificate2 serverCert)
         {
             _endPoint = endPoint;
             _serverCert = serverCert;
-            _clientCerts = clientCerts;
         }
 
         /// <summary>
@@ -111,17 +104,8 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
                     var client = _listenerSocket.AcceptTcpClient();
                     if (client.Connected)
                     {
-                        SslStream sslStream;
-                        if (_clientCerts != null)
-                        {
-                            sslStream = new SslStream(client.GetStream(), false, ValidateCertificate);
-                            sslStream.AuthenticateAsServer(_serverCert, true, SslProtocols.Default, true);
-                        }
-                        else
-                        {
-                            sslStream = new SslStream(client.GetStream(), false);
-                            sslStream.AuthenticateAsServer(_serverCert, false, SslProtocols.Default, true);
-                        }
+                        var sslStream = new SslStream(client.GetStream(), false);
+                        sslStream.AuthenticateAsServer(_serverCert, false, SslProtocols.Tls, true);
                         OnCommunicationChannelConnected(new TcpSslCommunicationChannel(_endPoint, client, sslStream));
                     }
                 }
@@ -145,32 +129,6 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
                     }
                 }
             }
-        }
-
-        /// <summary>
-        ///     Validacion de certificado
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="certificate"></param>
-        /// <param name="chain"></param>
-        /// <param name="sslPolicyErrors"></param>
-        /// <returns></returns>
-        public bool ValidateCertificate(object sender, X509Certificate certificate, X509Chain chain,
-            SslPolicyErrors sslPolicyErrors)
-        {
-            if (_clientCerts == null)
-            {
-                return false;
-            }
-
-            if ((sslPolicyErrors == SslPolicyErrors.RemoteCertificateChainErrors) && (_clientCerts != null))
-            {
-                return
-                    _clientCerts.Select(clientCert => clientCert.GetCertHashString())
-                        .Any(hashString => hashString != null && hashString.Equals(certificate.GetCertHashString()));
-            }
-
-            return sslPolicyErrors == SslPolicyErrors.None;
         }
     }
 }

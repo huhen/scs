@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using Hik.Communication.Scs.Client;
 using Hik.Communication.Scs.Communication.EndPoints.Tcp;
@@ -36,7 +35,7 @@ namespace Hik.Communication.Scs.Communication.EndPoints
             }
 
             //Split protocol and address parts
-            var splittedEndPoint = endPointAddr.Split(new[] {"://"}, StringSplitOptions.RemoveEmptyEntries);
+            var splittedEndPoint = endPointAddr.Split(new[] { "://" }, StringSplitOptions.RemoveEmptyEntries);
             if (splittedEndPoint.Length != 2)
             {
                 throw new ApplicationException(endPointAddress + " is not a valid endpoint address.");
@@ -66,9 +65,8 @@ namespace Hik.Communication.Scs.Communication.EndPoints
         ///     SSL
         /// </summary>
         /// <param name="serverCert"></param>
-        /// <param name="clientCerts"></param>
         /// <returns></returns>
-        internal abstract IScsServer CreateSecureServer(X509Certificate2 serverCert, List<X509Certificate2> clientCerts);
+        internal abstract IScsServer CreateSecureServer(X509Certificate2 serverCert);
 
         /// <summary>
         ///     Creates a Scs Server that uses this end point to connect to server.
@@ -79,11 +77,8 @@ namespace Hik.Communication.Scs.Communication.EndPoints
         /// <summary>
         ///     SSL
         /// </summary>
-        /// <param name="serverCert"></param>
-        /// <param name="clientCert"></param>
         /// <param name="nombreServerCert"></param>
         /// <returns></returns>
-        internal abstract IScsClient CreateSecureClient(X509Certificate2 serverCert, X509Certificate2 clientCert,
-            string nombreServerCert);
+        internal abstract IScsClient CreateSecureClient(string nombreServerCert);
     }
 }

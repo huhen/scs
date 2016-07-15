@@ -13,10 +13,7 @@ namespace Hik.Communication.Scs.Client.Tcp
     /// </summary>
     internal class ScsTcpSslClient : ScsClientBase
     {
-        private readonly X509Certificate2 _clientCert;
         private readonly string _nombreServerCert;
-
-        private readonly X509Certificate2 _serverCert;
 
         /// <summary>
         ///     The endpoint address of the server.
@@ -26,15 +23,10 @@ namespace Hik.Communication.Scs.Client.Tcp
         /// <summary>
         /// </summary>
         /// <param name="serverEndPoint"></param>
-        /// <param name="serverCert"></param>
-        /// <param name="clientCert"></param>
         /// <param name="nombreServerCert"></param>
-        public ScsTcpSslClient(ScsTcpEndPoint serverEndPoint, X509Certificate2 serverCert, X509Certificate2 clientCert,
-            string nombreServerCert)
+        public ScsTcpSslClient(ScsTcpEndPoint serverEndPoint, string nombreServerCert)
         {
             _serverEndPoint = serverEndPoint;
-            _serverCert = serverCert;
-            _clientCert = clientCert;
             _nombreServerCert = nombreServerCert;
         }
 
@@ -51,19 +43,8 @@ namespace Hik.Communication.Scs.Client.Tcp
                 client.Client = TcpHelper.ConnectToServer(_serverEndPoint, ConnectTimeout);
                 //client.Connect(new IPEndPoint(IPAddress.Parse(_serverEndPoint.IpAddress), _serverEndPoint.TcpPort));
 
-                SslStream sslStream;
-
-                if (_clientCert != null)
-                {
-                    sslStream = new SslStream(client.GetStream(), false, ValidateCertificate, SelectLocalCertificate);
-                    var clientCertificates = new X509Certificate2Collection { _clientCert };
-                    sslStream.AuthenticateAsClient(_nombreServerCert, clientCertificates, SslProtocols.Default, false);
-                }
-                else
-                {
-                    sslStream = new SslStream(client.GetStream(), false, ValidateCertificate, null);
-                    sslStream.AuthenticateAsClient(_nombreServerCert);
-                }
+                var sslStream = new SslStream(client.GetStream(), false, ValidateCertificate, null);
+                sslStream.AuthenticateAsClient(_nombreServerCert);
 
                 return new TcpSslCommunicationChannel(_serverEndPoint, client, sslStream);
             }
@@ -77,19 +58,7 @@ namespace Hik.Communication.Scs.Client.Tcp
         public bool ValidateCertificate(object sender, X509Certificate certificate, X509Chain chain,
             SslPolicyErrors sslPolicyErrors)
         {
-            if (sslPolicyErrors == SslPolicyErrors.RemoteCertificateChainErrors)
-            {
-                var hashString = _serverCert.GetCertHashString();
-                return hashString != null && hashString.Equals(certificate.GetCertHashString());
-            }
-
             return sslPolicyErrors == SslPolicyErrors.None;
-        }
-
-        public X509Certificate SelectLocalCertificate(object sender, string targetHost,
-            X509CertificateCollection localCertificates, X509Certificate remoteCertificate, string[] acceptableIssuers)
-        {
-            return _clientCert;
         }
     }
 }

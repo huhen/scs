@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using Hik.Communication.Scs.Client;
 using Hik.Communication.Scs.Client.Tcp;
@@ -69,11 +68,10 @@ namespace Hik.Communication.Scs.Communication.EndPoints.Tcp
         ///     SSL
         /// </summary>
         /// <param name="serverCert"></param>
-        /// <param name="clientCerts"></param>
         /// <returns></returns>
-        internal override IScsServer CreateSecureServer(X509Certificate2 serverCert, List<X509Certificate2> clientCerts)
+        internal override IScsServer CreateSecureServer(X509Certificate2 serverCert)
         {
-            return new ScsTcpSslServer(this, serverCert, clientCerts);
+            return new ScsTcpSslServer(this, serverCert);
         }
 
         /// <summary>
@@ -88,14 +86,11 @@ namespace Hik.Communication.Scs.Communication.EndPoints.Tcp
         /// <summary>
         ///     SSL
         /// </summary>
-        /// <param name="serverCert"></param>
-        /// <param name="clientCert"></param>
         /// <param name="nombreServerCert"></param>
         /// <returns></returns>
-        internal override IScsClient CreateSecureClient(X509Certificate2 serverCert, X509Certificate2 clientCert,
-            string nombreServerCert)
+        internal override IScsClient CreateSecureClient(string nombreServerCert)
         {
-            return new ScsTcpSslClient(this, serverCert, clientCert, nombreServerCert);
+            return new ScsTcpSslClient(this, nombreServerCert);
         }
 
         /// <summary>

@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography.X509Certificates;
-using Hik.Communication.Scs.Communication.EndPoints;
+﻿using Hik.Communication.Scs.Communication.EndPoints;
 
 namespace Hik.Communication.ScsServices.Client
 {
@@ -44,17 +43,14 @@ namespace Hik.Communication.ScsServices.Client
         ///     SSL
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="serverCert"></param>
-        /// <param name="clientCert"></param>
         /// <param name="nombreServerCert"></param>
         /// <param name="endpoint"></param>
         /// <param name="clientObject"></param>
         /// <returns></returns>
-        public static IScsServiceClient<T> CreateSecureClient<T>(X509Certificate2 serverCert,
-            X509Certificate2 clientCert, string nombreServerCert, ScsEndPoint endpoint, object clientObject = null)
+        public static IScsServiceClient<T> CreateSecureClient<T>(string nombreServerCert, ScsEndPoint endpoint, object clientObject = null)
             where T : class
         {
-            return new ScsServiceClient<T>(endpoint.CreateSecureClient(serverCert, clientCert, nombreServerCert),
+            return new ScsServiceClient<T>(endpoint.CreateSecureClient(nombreServerCert),
                 clientObject);
         }
 
@@ -62,18 +58,14 @@ namespace Hik.Communication.ScsServices.Client
         ///     SSL
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="serverCert"></param>
-        /// <param name="clientCert"></param>
         /// <param name="nombreServerCert"></param>
         /// <param name="endpointAddress"></param>
         /// <param name="clientObject"></param>
         /// <returns></returns>
-        public static IScsServiceClient<T> CreateSecureClient<T>(X509Certificate2 serverCert,
-            X509Certificate2 clientCert, string nombreServerCert, string endpointAddress, object clientObject = null)
+        public static IScsServiceClient<T> CreateSecureClient<T>(string nombreServerCert, string endpointAddress, object clientObject = null)
             where T : class
         {
-            return CreateSecureClient<T>(serverCert, clientCert, nombreServerCert,
-                ScsEndPoint.CreateEndPoint(endpointAddress), clientObject);
+            return CreateSecureClient<T>(nombreServerCert, ScsEndPoint.CreateEndPoint(endpointAddress), clientObject);
         }
     }
 }
