@@ -33,10 +33,12 @@ namespace Hik.Communication.Scs.Client
         /// </summary>
         /// <param name="endpoint"></param>
         /// <param name="nombreServerCert"></param>
+        /// <param name="hash"></param>
+        /// <param name="publicKey"></param>
         /// <returns></returns>
-        public static IScsClient CreateSecureClient(ScsEndPoint endpoint, string nombreServerCert)
+        public static IScsClient CreateSecureClient(ScsEndPoint endpoint, string nombreServerCert, byte[] hash, byte[] publicKey)
         {
-            return endpoint.CreateSecureClient(nombreServerCert);
+            return endpoint.CreateSecureClient(nombreServerCert, hash, publicKey);
         }
 
         /// <summary>

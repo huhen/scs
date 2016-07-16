@@ -66,7 +66,7 @@ namespace Hik.Communication.Scs.Communication.EndPoints
         /// </summary>
         /// <param name="serverCert"></param>
         /// <returns></returns>
-        internal abstract IScsServer CreateSecureServer(X509Certificate2 serverCert);
+        internal abstract IScsServer CreateSecureServer(X509Certificate serverCert);
 
         /// <summary>
         ///     Creates a Scs Server that uses this end point to connect to server.
@@ -78,7 +78,9 @@ namespace Hik.Communication.Scs.Communication.EndPoints
         ///     SSL
         /// </summary>
         /// <param name="nombreServerCert"></param>
+        /// <param name="hash"></param>
+        /// <param name="publicKey"></param>
         /// <returns></returns>
-        internal abstract IScsClient CreateSecureClient(string nombreServerCert);
+        internal abstract IScsClient CreateSecureClient(string nombreServerCert, byte[] hash, byte[] publicKey);
     }
 }

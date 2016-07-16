@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Hik.Communication.Scs.Communication.Messages;
+using System.IO;
 
 namespace Hik.Communication.Scs.Communication.Protocols
 {
@@ -21,14 +22,15 @@ namespace Hik.Communication.Scs.Communication.Protocols
         ///     cumulate bytes to build messages.
         ///     This method is synchronized. So, only one thread can call it concurrently.
         /// </summary>
-        /// <param name="receivedBytes">Received bytes from remote application</param>
+        /// <param name="buffer">Received bytes from remote application</param>
+        /// <param name="length">Length of received bytes from remote application</param>
         /// <returns>
         ///     List of messages.
         ///     Protocol can generate more than one message from a byte array.
         ///     Also, if received bytes are not sufficient to build a message, the protocol
         ///     may return an empty list (and save bytes to combine with next method call).
         /// </returns>
-        IEnumerable<IScsMessage> CreateMessages(byte[] receivedBytes);
+        IEnumerable<IScsMessage> CreateMessages(byte[] buffer, int length);
 
         /// <summary>
         ///     This method is called when connection with remote application is reset (connection is renewing or first

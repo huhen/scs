@@ -69,7 +69,7 @@ namespace Hik.Communication.Scs.Communication.EndPoints.Tcp
         /// </summary>
         /// <param name="serverCert"></param>
         /// <returns></returns>
-        internal override IScsServer CreateSecureServer(X509Certificate2 serverCert)
+        internal override IScsServer CreateSecureServer(X509Certificate serverCert)
         {
             return new ScsTcpSslServer(this, serverCert);
         }
@@ -87,10 +87,12 @@ namespace Hik.Communication.Scs.Communication.EndPoints.Tcp
         ///     SSL
         /// </summary>
         /// <param name="nombreServerCert"></param>
+        /// <param name="hash"></param>
+        /// <param name="publicKey"></param>
         /// <returns></returns>
-        internal override IScsClient CreateSecureClient(string nombreServerCert)
+        internal override IScsClient CreateSecureClient(string nombreServerCert, byte[] hash, byte[] publicKey)
         {
-            return new ScsTcpSslClient(this, nombreServerCert);
+            return new ScsTcpSslClient(this, nombreServerCert, hash, publicKey);
         }
 
         /// <summary>

@@ -1,12 +1,10 @@
-﻿#define UTILIZA_DESCONEXION_AUTOMATICA
-using System;
+﻿using System;
 using System.Net.Security;
-using System.Net.Sockets;
-using System.Threading;
 using Hik.Communication.Scs.Communication.EndPoints;
 using Hik.Communication.Scs.Communication.EndPoints.Tcp;
 using Hik.Communication.Scs.Communication.Messages;
-using Timer = Hik.Threading.Timer;
+using System.IO;
+using System.Threading;
 
 namespace Hik.Communication.Scs.Communication.Channels.Tcp
 {
@@ -17,20 +15,31 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         ///     Creates a new TcpCommunicationChannel object.
         /// </summary>
-        /// <param name="endpoint"></param>
-        /// <param name="client"></param>
+        /// <param name="endPoint"></param>
         /// <param name="stream"></param>
-        public TcpSslCommunicationChannel(ScsTcpEndPoint endpoint, TcpClient client, SslStream stream)
+        public TcpSslCommunicationChannel(ScsTcpEndPoint endPoint, SslStream stream)
         {
-            _client = client;
-            _client.NoDelay = true;
-
             _sslStream = stream;
 
-            _remoteEndPoint = endpoint;
+            _remoteEndPoint = endPoint;
 
             _buffer = new byte[_receiveBufferSize];
-            _syncLock = new object();
+        }
+
+        private volatile int disposed;
+
+        ~TcpSslCommunicationChannel()
+        {
+            Dispose();
+        }
+
+        public void Dispose()
+        {
+            if (Interlocked.Increment(ref disposed) == 1)
+            {
+                _sslStream?.Dispose();
+                GC.SuppressFinalize(this);
+            }
         }
 
         #endregion
@@ -42,32 +51,15 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         public override void Disconnect()
         {
-#if UTILIZA_DESCONEXION_AUTOMATICA
-            if (_timerTimeout != null)
-            {
-                _timerTimeout.Stop();
-                _timerTimeout = null; //????
-            }
-#endif
-
             if (CommunicationState != CommunicationStates.Connected)
             {
                 return;
             }
 
-            _running = false;
-            try
+            if (_sslStream != null)
             {
-                if (_client.Connected)
-                {
-                    _client.Close();
-                }
-
-                //_client.Dispose();
-            }
-            catch
-            {
-                // ignored
+                _sslStream.Dispose();
+                _sslStream = null;
             }
 
             CommunicationState = CommunicationStates.Disconnected;
@@ -83,64 +75,34 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         ///     It reveives bytes from socker.
         /// </summary>
         /// <param name="ar">Asyncronous call result</param>
-        private void ReceiveCallback(IAsyncResult ar)
+        private static void ReceiveCallback(IAsyncResult ar)
         {
-            if (!_running)
-            {
-                return;
-            }
-
-#if UTILIZA_DESCONEXION_AUTOMATICA
-            //int valorAnterior = Interlocked.CompareExchange(ref timeoutFlag, 2, 1);
-            if (Interlocked.CompareExchange(ref _timeoutFlag, 2, 1) /*valorAnterior*/!= 0)
-            {
-                //El flag ya ha sido seteado con lo cual nada!!
-                return;
-            }
-
-            _timerTimeout?.Stop();
-#endif
-
+            var _tcpSslCommunicationChannel = ar.AsyncState as TcpSslCommunicationChannel;
             try
             {
                 //Get received bytes count
-                var bytesRead = _sslStream.EndRead(ar);
+                var bytesRead = _tcpSslCommunicationChannel._sslStream.EndRead(ar);
                 if (bytesRead > 0)
                 {
-                    LastReceivedMessageTime = DateTime.Now;
-
-                    //Copy received bytes to a new byte array
-                    var receivedBytes = new byte[bytesRead];
-                    Array.Copy(_buffer, 0, receivedBytes, 0, bytesRead);
+                    _tcpSslCommunicationChannel.LastReceivedMessageTime = DateTime.Now;
 
                     //Read messages according to current wire protocol
-                    var messages = WireProtocol.CreateMessages(receivedBytes);
+                    var messages = _tcpSslCommunicationChannel.WireProtocol.CreateMessages(_tcpSslCommunicationChannel._buffer, bytesRead);
 
                     //Raise MessageReceived event for all received messages
                     foreach (var message in messages)
                     {
-                        OnMessageReceived(message);
+                        _tcpSslCommunicationChannel.OnMessageReceived(message);
                     }
-                }
-                else
-                {
-                    throw new CommunicationException("Tcp socket is closed");
-                }
-
-                //Read more bytes if still running
-                if (_running)
-                {
-                    _sslStream.BeginRead(_buffer, 0, _buffer.Length, ReceiveCallback, null);
-
-#if UTILIZA_DESCONEXION_AUTOMATICA
-                    _timerTimeout?.Start();
-#endif
+                    _tcpSslCommunicationChannel._sslStream.BeginRead(_tcpSslCommunicationChannel._buffer, 0, _tcpSslCommunicationChannel._buffer.Length, ReceiveCallback, _tcpSslCommunicationChannel);
+                    return;
                 }
             }
             catch
             {
-                Disconnect();
+                //ignored
             }
+            _tcpSslCommunicationChannel.Disconnect();
         }
 
         #endregion
@@ -161,7 +123,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         ///     Size of the buffer that is used to receive bytes from TCP socket.
         /// </summary>
-        private const int _receiveBufferSize = 4*1024; //4KB
+        private const int _receiveBufferSize = 4 * 1024; //4KB
 
         /// <summary>
         ///     This buffer is used to receive bytes
@@ -169,29 +131,14 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         private readonly byte[] _buffer;
 
         /// <summary>
-        ///     Underlying socket
-        /// </summary>
-        private readonly TcpClient _client;
-
-        /// <summary>
         ///     Secure stream to transmit / receive over
         /// </summary>
-        private readonly SslStream _sslStream;
+        private SslStream _sslStream;
 
         /// <summary>
-        ///     A flag to control thread's running
+        ///     lockSend
         /// </summary>
-        private volatile bool _running;
-
-        /// <summary>
-        ///     This object is just used for thread synchronizing (locking).
-        /// </summary>
-        private readonly object _syncLock;
-
-#if UTILIZA_DESCONEXION_AUTOMATICA
-        private Timer _timerTimeout;
-        private int _timeoutFlag;
-#endif
+        private object _lockSend = new object();
 
         #endregion
 
@@ -202,34 +149,8 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         protected override void StartInternal()
         {
-            _running = true;
-            _sslStream.BeginRead(_buffer, 0, _buffer.Length, ReceiveCallback, null);
-
-#if UTILIZA_DESCONEXION_AUTOMATICA
-            //  if (res.IsCompleted)
-            {
-                _timerTimeout = new Timer(120000);
-                _timerTimeout.Elapsed += timerTimeout_Elapsed;
-                _timerTimeout.Start();
-            }
-#endif
+            _sslStream.BeginRead(_buffer, 0, _buffer.Length, ReceiveCallback, this);
         }
-
-#if UTILIZA_DESCONEXION_AUTOMATICA
-        private void timerTimeout_Elapsed(object sender, EventArgs e)
-        {
-            _timerTimeout.Stop();
-
-            //int valorAnterior = Interlocked.CompareExchange(ref timeoutFlag, 1, 0);
-            if (Interlocked.CompareExchange(ref _timeoutFlag, 1, 0) /*valorAnterior*/!= 0)
-            {
-                //El flag ya ha sido seteado con lo cual nada!!
-                return;
-            }
-
-            Disconnect();
-        }
-#endif
 
         /// <summary>
         ///     Sends a message to the remote application.
@@ -237,26 +158,27 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         /// <param name="message">Message to be sent</param>
         protected override void SendMessageInternal(IScsMessage message)
         {
-            //Send message
-            var totalSent = 0;
-            lock (_syncLock)
+            //Create a byte array from message according to current protocol
+            var messageBytes = WireProtocol.GetBytes(message);
+
+            Monitor.Enter(_lockSend);
+            try
             {
-                //Create a byte array from message according to current protocol
-                var messageBytes = WireProtocol.GetBytes(message);
                 //Send all bytes to the remote application
-
-                try
-                {
-                    _sslStream.Write(messageBytes, totalSent, messageBytes.Length);
-                }
-                catch
-                {
-                    throw new CommunicationException("Message could not be sent via SSL stream");
-                }
-
-                LastSentMessageTime = DateTime.Now;
-                OnMessageSent(message);
+                _sslStream.Write(messageBytes);
             }
+            catch
+            {
+                Disconnect();
+                return;
+            }
+            finally
+            {
+                Monitor.Exit(_lockSend);
+            }
+
+            LastSentMessageTime = DateTime.Now;
+            OnMessageSent(message);
         }
 
         #endregion

@@ -15,14 +15,14 @@ namespace Hik.Communication.Scs.Server.Tcp
         /// </summary>
         private readonly ScsTcpEndPoint _endPoint;
 
-        private readonly X509Certificate2 _serverCert;
+        private readonly X509Certificate _serverCert;
 
 
         /// <summary>
         /// </summary>
         /// <param name="endPoint"></param>
         /// <param name="serverCert"></param>
-        public ScsTcpSslServer(ScsTcpEndPoint endPoint, X509Certificate2 serverCert)
+        public ScsTcpSslServer(ScsTcpEndPoint endPoint, X509Certificate serverCert)
         {
             _endPoint = endPoint;
             _serverCert = serverCert;

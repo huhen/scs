@@ -6,6 +6,8 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters;
 using System.Runtime.Serialization.Formatters.Binary;
 using Hik.Communication.Scs.Communication.Messages;
+using Ionic.Zlib;
+using System.Diagnostics;
 
 namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
 {
@@ -28,7 +30,7 @@ namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
         /// </summary>
         public BinarySerializationProtocol()
         {
-            _receiveMemoryStream = new MemoryStream();
+            ms = new MemoryStream();
         }
 
         #endregion
@@ -51,8 +53,8 @@ namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
             {
                 var toAssemblyName = assemblyName.Split(',')[0];
                 return (from assembly in AppDomain.CurrentDomain.GetAssemblies()
-                    where assembly.FullName.Split(',')[0] == toAssemblyName
-                    select assembly.GetType(typeName)).FirstOrDefault();
+                        where assembly.FullName.Split(',')[0] == toAssemblyName
+                        select assembly.GetType(typeName)).FirstOrDefault();
             }
         }
 
@@ -63,12 +65,12 @@ namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
         /// <summary>
         ///     Maximum length of a message.
         /// </summary>
-        private const int _maxMessageLength = 128*1024*1024; //128 Megabytes.
+        private const int _maxMessageLength = 128 * 1024 * 1024; //128 Megabytes.
 
         /// <summary>
         ///     This MemoryStream object is used to collect receiving bytes to build messages.
         /// </summary>
-        private MemoryStream _receiveMemoryStream;
+        private MemoryStream ms;
 
         #endregion
 
@@ -111,17 +113,18 @@ namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
         ///     cumulate bytes to build messages.
         ///     This method is synchronized. So, only one thread can call it concurrently.
         /// </summary>
-        /// <param name="receivedBytes">Received bytes from remote application</param>
+        /// <param name="buffer">Received bytes from remote application</param>
+        /// <param name="length">Length of received bytes from remote application</param>
         /// <returns>
         ///     List of messages.
         ///     Protocol can generate more than one message from a byte array.
         ///     Also, if received bytes are not sufficient to build a message, the protocol
         ///     may return an empty list (and save bytes to combine with next method call).
         /// </returns>
-        public IEnumerable<IScsMessage> CreateMessages(byte[] receivedBytes)
+        public IEnumerable<IScsMessage> CreateMessages(byte[] buffer, int length)
         {
             //Write all received bytes to the _receiveMemoryStream
-            _receiveMemoryStream.Write(receivedBytes, 0, receivedBytes.Length);
+            ms.Write(buffer, 0, length);
             //Create a list to collect messages
             var messages = new List<IScsMessage>();
             //Read all available messages and add to messages collection
@@ -139,9 +142,10 @@ namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
         /// </summary>
         public void Reset()
         {
-            if (_receiveMemoryStream.Length > 0)
+            if (ms.Length > 0)
             {
-                _receiveMemoryStream = new MemoryStream();
+                ms.Dispose();
+                ms = new MemoryStream();
             }
         }
 
@@ -164,7 +168,59 @@ namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
             using (var memoryStream = new MemoryStream())
             {
                 new BinaryFormatter().Serialize(memoryStream, message);
-                return memoryStream.ToArray();
+                var data = memoryStream.ToArray();
+                var compData = ZlibCodecCompress(data);
+                //Debug.WriteLine($"Compressed {data.Length} to {compData.Length}");
+                return compData;
+            }
+        }
+
+        private static byte[] ZlibCodecCompress(byte[] uncompressedBytes)
+        {
+            const int bufferSize = 1024;
+            ZlibCodec compressor = new ZlibCodec();
+
+            using (var ms = new MemoryStream())
+            {
+                int rc = compressor.InitializeDeflate(CompressionLevel.BestCompression, false);
+
+                compressor.InputBuffer = uncompressedBytes;
+                compressor.NextIn = 0;
+                compressor.AvailableBytesIn = uncompressedBytes.Length;
+
+                compressor.OutputBuffer = new byte[bufferSize];
+
+                // pass 1: deflate 
+                do
+                {
+                    compressor.NextOut = 0;
+                    compressor.AvailableBytesOut = bufferSize;
+                    rc = compressor.Deflate(FlushType.None);
+
+                    if (rc != ZlibConstants.Z_OK && rc != ZlibConstants.Z_STREAM_END)
+                        throw new Exception("deflating: " + compressor.Message);
+
+                    ms.Write(compressor.OutputBuffer, 0, bufferSize - compressor.AvailableBytesOut);
+                }
+                while (compressor.AvailableBytesIn != 0 || compressor.AvailableBytesOut == 0);
+
+                // pass 2: finish and flush
+                do
+                {
+                    compressor.NextOut = 0;
+                    compressor.AvailableBytesOut = bufferSize;
+                    rc = compressor.Deflate(FlushType.Finish);
+
+                    if (rc != ZlibConstants.Z_STREAM_END && rc != ZlibConstants.Z_OK)
+                        throw new Exception("deflating: " + compressor.Message);
+
+                    if (bufferSize - compressor.AvailableBytesOut != 0)
+                        ms.Write(compressor.OutputBuffer, 0, bufferSize - compressor.AvailableBytesOut);
+                }
+                while (compressor.AvailableBytesIn != 0 || compressor.AvailableBytesOut == 0);
+
+                compressor.EndDeflate();
+                return ms.ToArray();
             }
         }
 
@@ -181,11 +237,12 @@ namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
         protected virtual IScsMessage DeserializeMessage(byte[] bytes)
         {
             //Create a MemoryStream to convert bytes to a stream
-            using (var deserializeMemoryStream = new MemoryStream(bytes))
+            using (var deserializeMemoryStream = ZlibCodecDecompress(bytes))
+            //using (var deserializeMemoryStream = new MemoryStream(bytes))
             {
                 //Go to head of the stream
                 deserializeMemoryStream.Position = 0;
-
+                //Debug.WriteLine($"Decompressed {bytes.Length} to {deserializeMemoryStream.Length}");
                 //Deserialize the message
                 var binaryFormatter = new BinaryFormatter
                 {
@@ -194,8 +251,57 @@ namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
                 };
 
                 //Return the deserialized message
-                return (IScsMessage) binaryFormatter.Deserialize(deserializeMemoryStream);
+                return (IScsMessage)binaryFormatter.Deserialize(deserializeMemoryStream);
             }
+        }
+
+        private static MemoryStream ZlibCodecDecompress(byte[] compressedBytes)
+        {
+            const int bufferSize = 1024;
+            ZlibCodec decompressor = new ZlibCodec();
+
+            MemoryStream ms = new MemoryStream();
+
+            int rc = decompressor.InitializeInflate(false);
+
+            decompressor.InputBuffer = compressedBytes;
+            decompressor.NextIn = 0;
+            decompressor.AvailableBytesIn = compressedBytes.Length;
+
+            decompressor.OutputBuffer = new byte[bufferSize];
+
+            // pass 1: inflate 
+            do
+            {
+                decompressor.NextOut = 0;
+                decompressor.AvailableBytesOut = bufferSize;
+                rc = decompressor.Inflate(FlushType.None);
+
+                if (rc != ZlibConstants.Z_OK && rc != ZlibConstants.Z_STREAM_END)
+                    throw new Exception("inflating: " + decompressor.Message);
+
+                ms.Write(decompressor.OutputBuffer, 0, bufferSize - decompressor.AvailableBytesOut);
+            }
+            while (decompressor.AvailableBytesIn != 0 || decompressor.AvailableBytesOut == 0);
+
+            // pass 2: finish and flush
+            do
+            {
+                decompressor.NextOut = 0;
+                decompressor.AvailableBytesOut = bufferSize;
+                rc = decompressor.Inflate(FlushType.Finish);
+
+                if (rc != ZlibConstants.Z_STREAM_END && rc != ZlibConstants.Z_OK)
+                    throw new Exception("inflating: " + decompressor.Message);
+
+                if (bufferSize - decompressor.AvailableBytesOut != 0)
+                    ms.Write(decompressor.OutputBuffer, 0, bufferSize - decompressor.AvailableBytesOut);
+            }
+            while (decompressor.AvailableBytesIn != 0 || decompressor.AvailableBytesOut == 0);
+
+            decompressor.EndInflate();
+
+            return ms;
         }
 
         #endregion
@@ -216,17 +322,18 @@ namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
         private bool ReadSingleMessage(ICollection<IScsMessage> messages)
         {
             //Go to the begining of the stream
-            _receiveMemoryStream.Position = 0;
+            ms.Seek(0, SeekOrigin.Begin);
 
             //If stream has less than 4 bytes, that means we can not even read length of the message
             //So, return false to wait more bytes from remore application.
-            if (_receiveMemoryStream.Length < 4)
+            if (ms.Length < 4)
             {
+                ms.Seek(0, SeekOrigin.End);
                 return false;
             }
 
             //Read length of the message
-            var messageLength = ReadInt32(_receiveMemoryStream);
+            var messageLength = ReadInt32(ms);
             if (messageLength > _maxMessageLength)
             {
                 throw new Exception("Message is too big (" + messageLength + " bytes). Max allowed length is " +
@@ -237,37 +344,40 @@ namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
             if (messageLength == 0)
             {
                 //if no more bytes, return immediately
-                if (_receiveMemoryStream.Length == 4)
+                if (ms.Length == 4)
                 {
-                    _receiveMemoryStream = new MemoryStream(); //Clear the stream
+                    ms.Dispose();
+                    ms = new MemoryStream(); //Clear the stream
                     return false;
                 }
 
                 //Create a new memory stream from current except first 4-bytes.
-                var bytes = _receiveMemoryStream.ToArray();
-                _receiveMemoryStream = new MemoryStream();
-                _receiveMemoryStream.Write(bytes, 4, bytes.Length - 4);
+                var bytes = ms.ToArray();
+                ms.Dispose();
+                ms = new MemoryStream();
+                ms.Write(bytes, 4, bytes.Length - 4);
                 return true;
             }
 
             //If all bytes of the message is not received yet, return to wait more bytes
-            if (_receiveMemoryStream.Length < 4 + messageLength)
+            if (ms.Length < 4 + messageLength)
             {
-                _receiveMemoryStream.Position = _receiveMemoryStream.Length;
+                ms.Seek(0, SeekOrigin.End);
                 return false;
             }
 
             //Read bytes of serialized message and deserialize it
-            var serializedMessageBytes = ReadByteArray(_receiveMemoryStream, messageLength);
+            var serializedMessageBytes = ReadByteArray(ms, messageLength);
             messages.Add(DeserializeMessage(serializedMessageBytes));
 
             //Read remaining bytes to an array
-            var remainingBytes = ReadByteArray(_receiveMemoryStream,
-                (int) (_receiveMemoryStream.Length - (4 + messageLength)));
+
+            var remainingBytes = ReadByteArray(ms, (int)(ms.Length - (4 + messageLength)));
 
             //Re-create the receive memory stream and write remaining bytes
-            _receiveMemoryStream = new MemoryStream();
-            _receiveMemoryStream.Write(remainingBytes, 0, remainingBytes.Length);
+            ms.Dispose();
+            ms = new MemoryStream();
+            ms.Write(remainingBytes, 0, remainingBytes.Length);
 
             //Return true to re-call this method to try to read next message
             return remainingBytes.Length > 4;
@@ -281,10 +391,10 @@ namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
         /// <param name="number">An integer value to write</param>
         private static void WriteInt32(byte[] buffer, int startIndex, int number)
         {
-            buffer[startIndex] = (byte) ((number >> 24) & 0xFF);
-            buffer[startIndex + 1] = (byte) ((number >> 16) & 0xFF);
-            buffer[startIndex + 2] = (byte) ((number >> 8) & 0xFF);
-            buffer[startIndex + 3] = (byte) (number & 0xFF);
+            buffer[startIndex] = (byte)((number >> 24) & 0xFF);
+            buffer[startIndex + 1] = (byte)((number >> 16) & 0xFF);
+            buffer[startIndex + 2] = (byte)((number >> 8) & 0xFF);
+            buffer[startIndex + 3] = (byte)(number & 0xFF);
         }
 
         /// <summary>

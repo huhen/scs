@@ -44,14 +44,15 @@ namespace Hik.Communication.ScsServices.Client
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="nombreServerCert"></param>
+        /// <param name="hash"></param>
+        /// <param name="publicKey"></param>
         /// <param name="endpoint"></param>
         /// <param name="clientObject"></param>
         /// <returns></returns>
-        public static IScsServiceClient<T> CreateSecureClient<T>(string nombreServerCert, ScsEndPoint endpoint, object clientObject = null)
+        public static IScsServiceClient<T> CreateSecureClient<T>(string nombreServerCert, byte[] hash, byte[] publicKey, ScsEndPoint endpoint, object clientObject = null)
             where T : class
         {
-            return new ScsServiceClient<T>(endpoint.CreateSecureClient(nombreServerCert),
-                clientObject);
+            return new ScsServiceClient<T>(endpoint.CreateSecureClient(nombreServerCert, hash, publicKey), clientObject);
         }
 
         /// <summary>
@@ -59,13 +60,15 @@ namespace Hik.Communication.ScsServices.Client
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="nombreServerCert"></param>
+        /// <param name="hash"></param>
+        /// <param name="publicKey"></param>
         /// <param name="endpointAddress"></param>
         /// <param name="clientObject"></param>
         /// <returns></returns>
-        public static IScsServiceClient<T> CreateSecureClient<T>(string nombreServerCert, string endpointAddress, object clientObject = null)
+        public static IScsServiceClient<T> CreateSecureClient<T>(string nombreServerCert, byte[] hash, byte[] publicKey, string endpointAddress, object clientObject = null)
             where T : class
         {
-            return CreateSecureClient<T>(nombreServerCert, ScsEndPoint.CreateEndPoint(endpointAddress), clientObject);
+            return CreateSecureClient<T>(nombreServerCert, hash, publicKey, ScsEndPoint.CreateEndPoint(endpointAddress), clientObject);
         }
     }
 }

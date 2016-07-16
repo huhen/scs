@@ -5,6 +5,7 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using Hik.Communication.Scs.Communication.EndPoints.Tcp;
+using System;
 
 namespace Hik.Communication.Scs.Communication.Channels.Tcp
 {
@@ -31,17 +32,28 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private volatile bool _running;
 
-        /// <summary>
-        ///     The thread to listen socket
-        /// </summary>
-        private Thread _thread;
+        private volatile int disposed;
 
+        ~TcpSslConnectionListener()
+        {
+            Dispose();
+        }
+
+        public void Dispose()
+        {
+            if (Interlocked.Increment(ref disposed) == 1)
+            {
+                _listenerSocket?.Stop();
+                _listenerSocket = null;
+                GC.SuppressFinalize(this);
+            }
+        }
 
         /// <summary>
         /// </summary>
         /// <param name="endPoint"></param>
         /// <param name="serverCert"></param>
-        public TcpSslConnectionListener(ScsTcpEndPoint endPoint, X509Certificate2 serverCert)
+        public TcpSslConnectionListener(ScsTcpEndPoint endPoint, X509Certificate serverCert)
         {
             _endPoint = endPoint;
             _serverCert = serverCert;
@@ -52,10 +64,13 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         public override void Start()
         {
-            StartSocket();
+            if (_running) return;
+
+            var localIP = new IPEndPoint(IPAddress.Any, _endPoint.TcpPort);
+            _listenerSocket = new TcpListener(localIP);
+            _listenerSocket.Start();
+            _listenerSocket.BeginAcceptTcpClient(OnAcceptConnection, this);
             _running = true;
-            _thread = new Thread(DoListenAsThread);
-            _thread.Start();
         }
 
         /// <summary>
@@ -63,70 +78,67 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         public override void Stop()
         {
+            if (!_running) return;
+
             _running = false;
-            StopSocket();
+            _listenerSocket?.Stop();
         }
 
-        /// <summary>
-        ///     Starts listening socket.
-        /// </summary>
-        private void StartSocket()
+        private static void OnAcceptConnection(IAsyncResult result)
         {
-            _listenerSocket = new TcpListener(IPAddress.Any, _endPoint.TcpPort);
-            _listenerSocket.Start();
-        }
+            var _tcpSslConnectionListener = result.AsyncState as TcpSslConnectionListener;
+            SslStream sslStream = null;
 
-        /// <summary>
-        ///     Stops listening socket.
-        /// </summary>
-        private void StopSocket()
-        {
             try
             {
-                _listenerSocket.Stop();
+                if (_tcpSslConnectionListener._running)
+                {
+                    //start accepting the next connection…
+                    _tcpSslConnectionListener._listenerSocket.BeginAcceptTcpClient(OnAcceptConnection, _tcpSslConnectionListener);
+                }
+                else
+                {
+                    //someone called Stop() – don’t call EndAcceptTcpClient because
+                    //it will throw an ObjectDisposedException
+                    return;
+                }
+
+                //complete the last operation…
+                var client = _tcpSslConnectionListener._listenerSocket.EndAcceptTcpClient(result);
+                var ipEndPoint = client.Client.RemoteEndPoint as IPEndPoint;
+                sslStream = new SslStream(client.GetStream(), false);
+                var asyncState = new object[] { _tcpSslConnectionListener, sslStream, new ScsTcpEndPoint(ipEndPoint.Address.ToString(), ipEndPoint.Port) };
+                sslStream.BeginAuthenticateAsServer(_tcpSslConnectionListener._serverCert, false, SslProtocols.Tls, false, OnAuthenticateAsServer, asyncState);
             }
             catch
             {
-                // ignored
+                if (sslStream != null)
+                {
+                    sslStream.Dispose();
+                    sslStream = null;
+                }
             }
         }
 
-        /// <summary>
-        ///     Entrance point of the thread.
-        ///     This method is used by the thread to listen incoming requests.
-        /// </summary>
-        private void DoListenAsThread()
+        private static void OnAuthenticateAsServer(IAsyncResult result)
         {
-            while (_running)
-            {
-                try
-                {
-                    var client = _listenerSocket.AcceptTcpClient();
-                    if (client.Connected)
-                    {
-                        var sslStream = new SslStream(client.GetStream(), false);
-                        sslStream.AuthenticateAsServer(_serverCert, false, SslProtocols.Tls, true);
-                        OnCommunicationChannelConnected(new TcpSslCommunicationChannel(_endPoint, client, sslStream));
-                    }
-                }
-                catch
-                {
-                    //Disconnect, wait for a while and connect again.
-                    StopSocket();
-                    Thread.Sleep(1000);
-                    if (!_running)
-                    {
-                        return;
-                    }
+            var asyncState = result.AsyncState as object[];
+            if (asyncState == null && asyncState.Length != 3) return;
+            var _tcpSslConnectionListener = asyncState[0] as TcpSslConnectionListener;
+            var sslStream = asyncState[1] as SslStream;
+            var scsTcpEndPoint = asyncState[2] as ScsTcpEndPoint;
 
-                    try
-                    {
-                        StartSocket();
-                    }
-                    catch
-                    {
-                        // ignored
-                    }
+            try
+            {
+                sslStream.EndAuthenticateAsServer(result);
+                _tcpSslConnectionListener.OnCommunicationChannelConnected(new TcpSslCommunicationChannel(scsTcpEndPoint, sslStream));
+            }
+            catch
+            {
+                if (sslStream != null)
+                {
+                    sslStream.Dispose();
+                    sslStream = null;
                 }
             }
         }
