@@ -136,12 +136,6 @@ namespace Hik.Communication.Scs.Server
         private void CommunicationChannel_MessageReceived(object sender, MessageEventArgs e)
         {
             var message = e.Message;
-            if (message is ScsPingMessage)
-            {
-                _communicationChannel.SendMessage(new ScsPingMessage {RepliedMessageId = message.MessageId});
-                return;
-            }
-
             OnMessageReceived(message);
         }
 

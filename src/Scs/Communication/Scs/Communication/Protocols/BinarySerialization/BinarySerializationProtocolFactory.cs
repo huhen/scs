@@ -1,4 +1,5 @@
-﻿namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
+﻿
+namespace Hik.Communication.Scs.Communication.Protocols.BinarySerialization
 {
     /// <summary>
     ///     This class is used to create Binary Serialization Protocol objects.

@@ -1,15 +1,16 @@
 ﻿using System;
-using System.Net.Security;
+using System.Net.Sockets;
+using System.Security.Cryptography;
 using Hik.Communication.Scs.Communication.EndPoints;
 using Hik.Communication.Scs.Communication.EndPoints.Tcp;
 using Hik.Communication.Scs.Communication.Messages;
-using System.IO;
 using System.Threading;
 
 namespace Hik.Communication.Scs.Communication.Channels.Tcp
 {
     internal class TcpSslCommunicationChannel : CommunicationChannelBase
     {
+        private readonly Aes _aes;
         #region Constructor
 
         /// <summary>
@@ -17,16 +18,19 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         /// <param name="endPoint"></param>
         /// <param name="stream"></param>
-        public TcpSslCommunicationChannel(ScsTcpEndPoint endPoint, SslStream stream)
+        /// <param name="aes"></param>
+        public TcpSslCommunicationChannel(ScsTcpEndPoint endPoint, NetworkStream stream, Aes aes)
         {
             _sslStream = stream;
 
             _remoteEndPoint = endPoint;
 
             _buffer = new byte[_receiveBufferSize];
+
+            _aes = aes;
         }
 
-        private volatile int disposed;
+        private int _disposed;
 
         ~TcpSslCommunicationChannel()
         {
@@ -35,10 +39,22 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
 
         public void Dispose()
         {
-            if (Interlocked.Increment(ref disposed) == 1)
+            if (Interlocked.Increment(ref _disposed) == 1)
+            {
+                DisposeVars();
+                GC.SuppressFinalize(this);
+            }
+        }
+
+        private void DisposeVars()
+        {
+            try
             {
                 _sslStream?.Dispose();
-                GC.SuppressFinalize(this);
+            }
+            catch
+            {
+                // ignored
             }
         }
 
@@ -56,11 +72,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
                 return;
             }
 
-            if (_sslStream != null)
-            {
-                _sslStream.Dispose();
-                _sslStream = null;
-            }
+            DisposeVars();
 
             CommunicationState = CommunicationStates.Disconnected;
             OnDisconnected();
@@ -77,24 +89,25 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         /// <param name="ar">Asyncronous call result</param>
         private static void ReceiveCallback(IAsyncResult ar)
         {
-            var _tcpSslCommunicationChannel = ar.AsyncState as TcpSslCommunicationChannel;
+            var tcpSslCommunicationChannel = ar.AsyncState as TcpSslCommunicationChannel;
+            if (tcpSslCommunicationChannel == null) return;
             try
             {
                 //Get received bytes count
-                var bytesRead = _tcpSslCommunicationChannel._sslStream.EndRead(ar);
+                var bytesRead = tcpSslCommunicationChannel._sslStream.EndRead(ar);
                 if (bytesRead > 0)
                 {
-                    _tcpSslCommunicationChannel.LastReceivedMessageTime = DateTime.Now;
+                    tcpSslCommunicationChannel.LastReceivedMessageTime = DateTime.Now;
 
                     //Read messages according to current wire protocol
-                    var messages = _tcpSslCommunicationChannel.WireProtocol.CreateMessages(_tcpSslCommunicationChannel._buffer, bytesRead);
+                    var messages = tcpSslCommunicationChannel.WireProtocol.CreateMessages(tcpSslCommunicationChannel._buffer, bytesRead);
 
                     //Raise MessageReceived event for all received messages
                     foreach (var message in messages)
                     {
-                        _tcpSslCommunicationChannel.OnMessageReceived(message);
+                        tcpSslCommunicationChannel.OnMessageReceived(message);
                     }
-                    _tcpSslCommunicationChannel._sslStream.BeginRead(_tcpSslCommunicationChannel._buffer, 0, _tcpSslCommunicationChannel._buffer.Length, ReceiveCallback, _tcpSslCommunicationChannel);
+                    tcpSslCommunicationChannel._sslStream.BeginRead(tcpSslCommunicationChannel._buffer, 0, tcpSslCommunicationChannel._buffer.Length, ReceiveCallback, tcpSslCommunicationChannel);
                     return;
                 }
             }
@@ -102,7 +115,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
             {
                 //ignored
             }
-            _tcpSslCommunicationChannel.Disconnect();
+            tcpSslCommunicationChannel.Disconnect();
         }
 
         #endregion
@@ -133,11 +146,29 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         ///     Secure stream to transmit / receive over
         /// </summary>
-        private SslStream _sslStream;
+        // ReSharper disable once FieldCanBeMadeReadOnly.Local
+        private NetworkStream _sslStream;
+
+        /*/// <summary>
+        /// AES
+        /// </summary>
+        private Aes _aes;
+
+        /// <summary>
+        /// Encryptor
+        /// </summary>
+        private ICryptoTransform _encryptor;
+
+        /// <summary>
+        /// Decryptor
+        /// </summary>
+        private ICryptoTransform _decryptor;*/
+
 
         /// <summary>
         ///     lockSend
         /// </summary>
+        // ReSharper disable once FieldCanBeMadeReadOnly.Local
         private object _lockSend = new object();
 
         #endregion
@@ -149,6 +180,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         protected override void StartInternal()
         {
+            WireProtocol.SetAes(_aes);
             _sslStream.BeginRead(_buffer, 0, _buffer.Length, ReceiveCallback, this);
         }
 
@@ -158,14 +190,14 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         /// <param name="message">Message to be sent</param>
         protected override void SendMessageInternal(IScsMessage message)
         {
-            //Create a byte array from message according to current protocol
-            var messageBytes = WireProtocol.GetBytes(message);
-
             Monitor.Enter(_lockSend);
             try
             {
+                //Create a byte array from message according to current protocol
+                var messageBytes = WireProtocol.GetBytes(message);
+
                 //Send all bytes to the remote application
-                _sslStream.Write(messageBytes);
+                _sslStream.Write(messageBytes, 0, messageBytes.Length);
             }
             catch
             {

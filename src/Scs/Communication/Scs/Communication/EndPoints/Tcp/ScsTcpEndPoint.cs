@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Security.Cryptography.X509Certificates;
 using Hik.Communication.Scs.Client;
 using Hik.Communication.Scs.Client.Tcp;
 using Hik.Communication.Scs.Server;
@@ -56,43 +55,23 @@ namespace Hik.Communication.Scs.Communication.EndPoints.Tcp
         public int TcpPort { get; }
 
         /// <summary>
-        ///     Creates a Scs Server that uses this end point to listen incoming connections.
-        /// </summary>
-        /// <returns>Scs Server</returns>
-        internal override IScsServer CreateServer()
-        {
-            return new ScsTcpServer(this);
-        }
-
-        /// <summary>
         ///     SSL
         /// </summary>
-        /// <param name="serverCert"></param>
+        /// <param name="privateKey"></param>
         /// <returns></returns>
-        internal override IScsServer CreateSecureServer(X509Certificate serverCert)
+        internal override IScsServer CreateSecureServer(byte[] privateKey)
         {
-            return new ScsTcpSslServer(this, serverCert);
-        }
-
-        /// <summary>
-        ///     Creates a Scs Client that uses this end point to connect to server.
-        /// </summary>
-        /// <returns>Scs Client</returns>
-        internal override IScsClient CreateClient()
-        {
-            return new ScsTcpClient(this);
+            return new ScsTcpSslServer(this, privateKey);
         }
 
         /// <summary>
         ///     SSL
         /// </summary>
-        /// <param name="nombreServerCert"></param>
-        /// <param name="hash"></param>
         /// <param name="publicKey"></param>
         /// <returns></returns>
-        internal override IScsClient CreateSecureClient(string nombreServerCert, byte[] hash, byte[] publicKey)
+        internal override IScsClient CreateSecureClient(byte[] publicKey)
         {
-            return new ScsTcpSslClient(this, nombreServerCert, hash, publicKey);
+            return new ScsTcpSslClient(this, publicKey);
         }
 
         /// <summary>

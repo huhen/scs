@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Security.Cryptography.X509Certificates;
 using Hik.Communication.Scs.Client;
 using Hik.Communication.Scs.Communication.EndPoints.Tcp;
 using Hik.Communication.Scs.Server;
@@ -55,32 +54,17 @@ namespace Hik.Communication.Scs.Communication.EndPoints
         }
 
         /// <summary>
-        ///     Creates a Scs Server that uses this end point to listen incoming connections.
-        /// </summary>
-        /// <returns>Scs Server</returns>
-        internal abstract IScsServer CreateServer();
-
-
-        /// <summary>
         ///     SSL
         /// </summary>
-        /// <param name="serverCert"></param>
+        /// <param name="privateKey"></param>
         /// <returns></returns>
-        internal abstract IScsServer CreateSecureServer(X509Certificate serverCert);
-
-        /// <summary>
-        ///     Creates a Scs Server that uses this end point to connect to server.
-        /// </summary>
-        /// <returns>Scs Client</returns>
-        internal abstract IScsClient CreateClient();
+        internal abstract IScsServer CreateSecureServer(byte[] privateKey);
 
         /// <summary>
         ///     SSL
         /// </summary>
-        /// <param name="nombreServerCert"></param>
-        /// <param name="hash"></param>
         /// <param name="publicKey"></param>
         /// <returns></returns>
-        internal abstract IScsClient CreateSecureClient(string nombreServerCert, byte[] hash, byte[] publicKey);
+        internal abstract IScsClient CreateSecureClient(byte[] publicKey);
     }
 }

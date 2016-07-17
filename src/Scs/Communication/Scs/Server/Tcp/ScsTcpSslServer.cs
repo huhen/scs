@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography.X509Certificates;
-using Hik.Communication.Scs.Communication.Channels;
+﻿using Hik.Communication.Scs.Communication.Channels;
 using Hik.Communication.Scs.Communication.Channels.Tcp;
 using Hik.Communication.Scs.Communication.EndPoints.Tcp;
 
@@ -15,17 +14,17 @@ namespace Hik.Communication.Scs.Server.Tcp
         /// </summary>
         private readonly ScsTcpEndPoint _endPoint;
 
-        private readonly X509Certificate _serverCert;
+        private readonly byte[] _privateKey;
 
 
         /// <summary>
         /// </summary>
         /// <param name="endPoint"></param>
-        /// <param name="serverCert"></param>
-        public ScsTcpSslServer(ScsTcpEndPoint endPoint, X509Certificate serverCert)
+        /// <param name="privateKey"></param>
+        public ScsTcpSslServer(ScsTcpEndPoint endPoint, byte[] privateKey)
         {
             _endPoint = endPoint;
-            _serverCert = serverCert;
+            _privateKey = privateKey;
         }
 
 
@@ -35,7 +34,7 @@ namespace Hik.Communication.Scs.Server.Tcp
         /// <returns>Created listener object</returns>
         protected override IConnectionListener CreateConnectionListener()
         {
-            return new TcpSslConnectionListener(_endPoint, _serverCert);
+            return new TcpSslConnectionListener(_endPoint, _privateKey);
         }
     }
 }

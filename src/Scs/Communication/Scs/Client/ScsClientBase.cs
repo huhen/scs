@@ -3,7 +3,6 @@ using Hik.Communication.Scs.Communication;
 using Hik.Communication.Scs.Communication.Channels;
 using Hik.Communication.Scs.Communication.Messages;
 using Hik.Communication.Scs.Communication.Protocols;
-using Hik.Threading;
 
 namespace Hik.Communication.Scs.Client
 {
@@ -19,8 +18,8 @@ namespace Hik.Communication.Scs.Client
         /// </summary>
         protected ScsClientBase()
         {
-            _pingTimer = new Timer(30000);
-            _pingTimer.Elapsed += PingTimer_Elapsed;
+            //_pingTimer = new Timer(30000);
+            //_pingTimer.Elapsed += PingTimer_Elapsed;
             ConnectTimeout = _defaultConnectionAttemptTimeout;
             WireProtocol = WireProtocolManager.GetDefaultWireProtocol();
         }
@@ -124,10 +123,10 @@ namespace Hik.Communication.Scs.Client
         /// </summary>
         private ICommunicationChannel _communicationChannel;
 
-        /// <summary>
-        ///     This timer is used to send PingMessage messages to server periodically.
-        /// </summary>
-        private readonly Timer _pingTimer;
+        //// <summary>
+        ////     This timer is used to send PingMessage messages to server periodically.
+        //// </summary>
+        //private readonly Timer _pingTimer;
 
         #endregion
 
@@ -145,7 +144,7 @@ namespace Hik.Communication.Scs.Client
             _communicationChannel.MessageReceived += CommunicationChannel_MessageReceived;
             _communicationChannel.MessageSent += CommunicationChannel_MessageSent;
             _communicationChannel.Start();
-            _pingTimer.Start();
+            //_pingTimer.Start();
             OnConnected();
         }
 
@@ -200,11 +199,6 @@ namespace Hik.Communication.Scs.Client
         /// <param name="e">Event arguments</param>
         private void CommunicationChannel_MessageReceived(object sender, MessageEventArgs e)
         {
-            if (e.Message is ScsPingMessage)
-            {
-                return;
-            }
-
             OnMessageReceived(e.Message);
         }
 
@@ -225,37 +219,8 @@ namespace Hik.Communication.Scs.Client
         /// <param name="e">Event arguments</param>
         private void CommunicationChannel_Disconnected(object sender, EventArgs e)
         {
-            _pingTimer.Stop();
+            //_pingTimer.Stop();
             OnDisconnected();
-        }
-
-        /// <summary>
-        ///     Handles Elapsed event of _pingTimer to send PingMessage messages to server.
-        /// </summary>
-        /// <param name="sender">Source of event</param>
-        /// <param name="e">Event arguments</param>
-        private void PingTimer_Elapsed(object sender, EventArgs e)
-        {
-            if (CommunicationState != CommunicationStates.Connected)
-            {
-                return;
-            }
-
-            try
-            {
-                var lastMinute = DateTime.Now.AddMinutes(-1);
-                if (_communicationChannel.LastReceivedMessageTime > lastMinute ||
-                    _communicationChannel.LastSentMessageTime > lastMinute)
-                {
-                    return;
-                }
-
-                _communicationChannel.SendMessage(new ScsPingMessage());
-            }
-                // ReSharper disable once EmptyGeneralCatchClause
-            catch
-            {
-            }
         }
 
         #endregion

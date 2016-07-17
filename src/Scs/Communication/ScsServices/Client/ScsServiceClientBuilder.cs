@@ -8,67 +8,31 @@ namespace Hik.Communication.ScsServices.Client
     public class ScsServiceClientBuilder
     {
         /// <summary>
-        ///     Creates a client to connect to a SCS service.
-        /// </summary>
-        /// <typeparam name="T">Type of service interface for remote method call</typeparam>
-        /// <param name="endpoint">EndPoint of the server</param>
-        /// <param name="clientObject">
-        ///     Client-side object that handles remote method calls from server to client.
-        ///     May be null if client has no methods to be invoked by server
-        /// </param>
-        /// <returns>Created client object to connect to the server</returns>
-        public static IScsServiceClient<T> CreateClient<T>(ScsEndPoint endpoint, object clientObject = null)
-            where T : class
-        {
-            return new ScsServiceClient<T>(endpoint.CreateClient(), clientObject);
-        }
-
-        /// <summary>
-        ///     Creates a client to connect to a SCS service.
-        /// </summary>
-        /// <typeparam name="T">Type of service interface for remote method call</typeparam>
-        /// <param name="endpointAddress">EndPoint address of the server</param>
-        /// <param name="clientObject">
-        ///     Client-side object that handles remote method calls from server to client.
-        ///     May be null if client has no methods to be invoked by server
-        /// </param>
-        /// <returns>Created client object to connect to the server</returns>
-        public static IScsServiceClient<T> CreateClient<T>(string endpointAddress, object clientObject = null)
-            where T : class
-        {
-            return CreateClient<T>(ScsEndPoint.CreateEndPoint(endpointAddress), clientObject);
-        }
-
-        /// <summary>
         ///     SSL
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="nombreServerCert"></param>
-        /// <param name="hash"></param>
         /// <param name="publicKey"></param>
         /// <param name="endpoint"></param>
         /// <param name="clientObject"></param>
         /// <returns></returns>
-        public static IScsServiceClient<T> CreateSecureClient<T>(string nombreServerCert, byte[] hash, byte[] publicKey, ScsEndPoint endpoint, object clientObject = null)
+        public static IScsServiceClient<T> CreateSecureClient<T>(byte[] publicKey, ScsEndPoint endpoint, object clientObject = null)
             where T : class
         {
-            return new ScsServiceClient<T>(endpoint.CreateSecureClient(nombreServerCert, hash, publicKey), clientObject);
+            return new ScsServiceClient<T>(endpoint.CreateSecureClient(publicKey), clientObject);
         }
 
         /// <summary>
         ///     SSL
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="nombreServerCert"></param>
-        /// <param name="hash"></param>
         /// <param name="publicKey"></param>
         /// <param name="endpointAddress"></param>
         /// <param name="clientObject"></param>
         /// <returns></returns>
-        public static IScsServiceClient<T> CreateSecureClient<T>(string nombreServerCert, byte[] hash, byte[] publicKey, string endpointAddress, object clientObject = null)
+        public static IScsServiceClient<T> CreateSecureClient<T>(byte[] publicKey, string endpointAddress, object clientObject = null)
             where T : class
         {
-            return CreateSecureClient<T>(nombreServerCert, hash, publicKey, ScsEndPoint.CreateEndPoint(endpointAddress), clientObject);
+            return CreateSecureClient<T>(publicKey, ScsEndPoint.CreateEndPoint(endpointAddress), clientObject);
         }
     }
 }

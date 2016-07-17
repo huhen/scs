@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Security.Cryptography;
 using Hik.Communication.Scs.Communication.Messages;
-using System.IO;
 
 namespace Hik.Communication.Scs.Communication.Protocols
 {
@@ -38,5 +38,11 @@ namespace Hik.Communication.Scs.Communication.Protocols
         ///     So, wire protocol must reset itself.
         /// </summary>
         void Reset();
+
+        /// <summary>
+        /// SetAes
+        /// </summary>
+        /// <param name="aes"></param>
+        void SetAes(Aes aes);
     }
 }

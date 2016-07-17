@@ -39,7 +39,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
             _clientSocket = clientSocket;
             _clientSocket.NoDelay = true;
 
-            var ipEndPoint = (IPEndPoint) _clientSocket.RemoteEndPoint;
+            var ipEndPoint = (IPEndPoint)_clientSocket.RemoteEndPoint;
             _remoteEndPoint = new ScsTcpEndPoint(ipEndPoint.Address.ToString(), ipEndPoint.Port);
 
             _buffer = new byte[_receiveBufferSize];
@@ -123,7 +123,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
                     LastReceivedMessageTime = DateTime.Now;
 
                     //Read messages according to current wire protocol
-                    var messages = WireProtocol.CreateMessages(_buffer, bytesRead);
+                    var messages = WireProtocol.CreateMessages(_buffer, bytesRead, null);
 
                     //Raise MessageReceived event for all received messages
                     foreach (var message in messages)
@@ -169,7 +169,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         ///     Size of the buffer that is used to receive bytes from TCP socket.
         /// </summary>
-        private const int _receiveBufferSize = 4*1024; //4KB
+        private const int _receiveBufferSize = 4 * 1024; //4KB
 
         /// <summary>
         ///     This buffer is used to receive bytes
@@ -245,7 +245,7 @@ namespace Hik.Communication.Scs.Communication.Channels.Tcp
             lock (_syncLock)
             {
                 //Create a byte array from message according to current protocol
-                var messageBytes = WireProtocol.GetBytes(message);
+                var messageBytes = WireProtocol.GetBytes(message, null);
                 //Send all bytes to the remote application
                 while (totalSent < messageBytes.Length)
                 {

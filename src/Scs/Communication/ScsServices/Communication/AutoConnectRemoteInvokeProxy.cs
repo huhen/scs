@@ -43,8 +43,9 @@ namespace Hik.Communication.ScsServices.Communication
                 return base.Invoke(msg);
             }
 
+            throw new CommunicationStateException("Not connected");
             //Connect, call method and finally disconnect
-            _client.Connect();
+            /*_client.Connect();
             try
             {
                 return base.Invoke(msg);
@@ -52,7 +53,7 @@ namespace Hik.Communication.ScsServices.Communication
             finally
             {
                 _client.Disconnect();
-            }
+            }*/
         }
     }
 }

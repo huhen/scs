@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography.X509Certificates;
-using Hik.Communication.Scs.Communication.EndPoints;
+﻿using Hik.Communication.Scs.Communication.EndPoints;
 
 namespace Hik.Communication.Scs.Server
 {
@@ -9,24 +8,14 @@ namespace Hik.Communication.Scs.Server
     public static class ScsServerFactory
     {
         /// <summary>
-        ///     Creates a new SCS Server using an EndPoint.
-        /// </summary>
-        /// <param name="endPoint">Endpoint that represents address of the server</param>
-        /// <returns>Created TCP server</returns>
-        public static IScsServer CreateServer(ScsEndPoint endPoint)
-        {
-            return endPoint.CreateServer();
-        }
-
-        /// <summary>
         ///     SSL
         /// </summary>
         /// <param name="endPoint"></param>
-        /// <param name="serverCert"></param>
+        /// <param name="privateKey"></param>
         /// <returns></returns>
-        public static IScsServer CreateSecureServer(ScsEndPoint endPoint, X509Certificate serverCert)
+        public static IScsServer CreateSecureServer(ScsEndPoint endPoint, byte[] privateKey)
         {
-            return endPoint.CreateSecureServer(serverCert);
+            return endPoint.CreateSecureServer(privateKey);
         }
     }
 }
